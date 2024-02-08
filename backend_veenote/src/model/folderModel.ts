@@ -10,7 +10,7 @@ interface Vfolder extends Document {
 
 const folderSchema: Schema = new Schema<Vfolder>({
     folderName: {type: String, required: true},
-    notes: [{type: Schema.Types.ObjectId, refs: "Notes"}],
+    notes: [{type: Schema.Types.ObjectId, ref: "Notes"}],
     createdAt: {type: Date, default: Date.now()},
     updatedAt: {type: Date, default: Date.now()}
 });
