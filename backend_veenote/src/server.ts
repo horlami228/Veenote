@@ -1,35 +1,36 @@
+// Import required modules and components
 import express from 'express';
-import userRoute from "./routes/user.js";
-import mongoose from 'mongoose';
-import User from './model/userModel';
+import userRoutes from "./routes/userRoutes.js";
+import swaggerSpec from './swaggerConfig.js';
+import swaggerUi from 'swagger-ui-express';
 
-
+// Initialize Express app
 const app = express();
 
-const db = mongoose;
+// Set default port or use provided PORT environment variable
+const PORT = process.env.PORT || 8000;
 
-db.connect("mongodb://localhost:27017/veenote")
-.then(() => console.log("connected succesfully"))
-.catch((err) => console.log("failed to connect", err.message));
+// Middleware configuration
+// Enable express to parse JSON data
+app.use(express.json());
 
+// Swagger documentation setup
+// '/api-docs' endpoint serves the Swagger UI based on the swaggerSpec configuration
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// const new_user = new User({email: "scamcho@gmail.com"});
-// ( async () => {
-//     try {
-//         await new_user.save();
-//     } catch (error){
-//         if (error instanceof Error) {
-//             console.log(error.message);
-//         }
-    
-//     }
-// })();
+// Route configuration
+// All API routes are prefixed with '/api/v1'
+app.use('/api/v1', userRoutes);
 
-
-
-app.use("/user", userRoute);
+// A custom 404 'not found' middleware
+app.use((req, res, next) => {
+    res.status(404).send("404 Page Not Found");
+    next();
+});
 
 
-app.listen("8000", () => {
-    console.log("now listning on port 8000");
+// Start the server
+// Listens for requests on the specified PORT
+app.listen(PORT, () => {
+    console.log(`Server is now listening on port ${PORT}`);
 });
