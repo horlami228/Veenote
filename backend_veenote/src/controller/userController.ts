@@ -113,6 +113,7 @@ export const deleteUser = (req: Request, res: Response) => {
 
         // if succesful send a 200 OK with the deleted data
         res.status(200).json({"Deleted": user});
+        
     })
     .catch(error => {
         // if error occured response with 500 Internal Server Error and print out error
