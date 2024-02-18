@@ -3,7 +3,7 @@ import {Request, Response} from 'express';
 // Importing the User model from the userModel.js file, which defines the schema for the user documents in the MongoDB database.
 import User from '../model/userModel.js';
 // Importing the base model from the baseModel.ts file, which defines generic functions
-import { find } from '../model/engine/baseModel.js';
+
 
 
 
@@ -99,6 +99,27 @@ export const userByName = (req: Request, res: Response) => {
 
         res.status(500).json({
             "Error": "Getting User",
+            "Details": error.message
+        });
+    });
+};
+
+// export the deleteUser function to handle get request for deleting a user
+export const deleteUser = (req: Request, res: Response) => {
+    const userName: string = req.params.userName;
+
+    User.findOneAndDelete({"userName": userName})
+    .then(user => {
+
+        // if succesful send a 200 OK with the deleted data
+        res.status(200).json({"Deleted": user});
+        
+    })
+    .catch(error => {
+        // if error occured response with 500 Internal Server Error and print out error
+        // error message is included in the response
+        res.status(500).json({
+            "Error": "Failed to perform delete",
             "Details": error.message
         });
     });
