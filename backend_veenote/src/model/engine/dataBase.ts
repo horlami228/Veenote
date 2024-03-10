@@ -1,13 +1,18 @@
+/**
+ * Connects to the MongoDB database using the provided URI.
+ * @throws {Error} If DATABASE_URI is not defined.
+ */
 import mongoose from 'mongoose';
+import {Config, DbConfig, config} from '../../config/config.js';
 
-const uri: string = process.env.DATABASE_URI!;
+// Define the URI for the MongoDB database
+const env: keyof Config = (process.env.NODE_ENV as keyof Config) || 'development';
 
-if (typeof uri === 'undefined') {
-    throw new Error('DATABASE_URI is not defined');
-}
+const dbConfig:DbConfig = config[env];
+// Connect to the MongoDB database using the provided URI
+mongoose.connect(dbConfig.uri)
+    .then(() => console.log("connected succesfully"))
+    .catch((err) => console.log("failed to connect", err.message));
 
-mongoose.connect(uri)
-.then(() => console.log("connected succesfully"))
-.catch((err) => console.log("failed to connect", err.message));
-
-export default mongoose ;
+// Export the mongoose object as the default export
+export default mongoose;
