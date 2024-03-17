@@ -3,9 +3,7 @@ import {Request, Response} from 'express';
 // Importing the User model from the userModel.js file, which defines the schema for the user documents in the MongoDB database.
 import User from '../model/userModel.js';
 // Importing the base model from the baseModel.ts file, which defines generic functions
-
-
-
+import Folder from '../model/folderModel.js';
 
 // Define the 'createUser' controller function as an asynchronous function to handle POST requests for creating a new user.
 export const createUser = async  (req: Request, res: Response) => {
@@ -32,15 +30,25 @@ export const createUser = async  (req: Request, res: Response) => {
         // Saves the new user instance to the MongoDB database and awaits its completion.
         const user = await new_user.save();
 
+        // Create the root folder for the user
+        const folderData = {
+            folderName: "ROOT FOLDER",
+            is_root: true,
+            userId: user.id
+        };
+
+        const new_folder = new Folder(folderData);
+        const folder = await new_folder.save();
+
         // Responds with a 200 OK status and the newly created user data in JSON format.
-        res.status(200).json(user);
+        res.status(201).json({"User": user, "Folder": folder});
 
     } catch(error) {
         // Catches any errors that occur during the execution of the try block.
         if (error instanceof Error) {
             // Responds with a 500 Internal Server Error status and the error details if an exception occurs.
             res.status(500).json({
-                "Error": "Error creating a user",
+                "Error": "Error Creating A User",
                 "Details": error.message
             });
         }
@@ -106,9 +114,9 @@ export const userByName = (req: Request, res: Response) => {
 
 // export the deleteUser function to handle get request for deleting a user
 export const deleteUser = (req: Request, res: Response) => {
-    const userName: string = req.params.userName;
+    const id: string = req.params.userName;
 
-    User.findOneAndDelete({"userName": userName})
+    User.findOneAndDelete({"_id": id})
     .then(user => {
 
         // if succesful send a 200 OK with the deleted data
