@@ -1,6 +1,7 @@
 // Import required modules and components
 import express from 'express';
 import userRoutes from "./routes/userRoutes.js";
+import folderRoutes from './routes/folderRoutes.js';
 import swaggerSpec from './swaggerConfig.js';
 import swaggerUi from 'swagger-ui-express';
 
@@ -21,6 +22,8 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // Route configuration
 // All API routes are prefixed with '/api/v1'
 app.use('/api/v1', userRoutes);
+
+app.use('api/v1', folderRoutes);
 
 // A custom 404 'not found' middleware
 app.use((req, res, next) => {

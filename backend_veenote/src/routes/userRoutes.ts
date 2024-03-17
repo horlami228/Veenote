@@ -6,8 +6,6 @@ import { createUser, allUsers, userByName, deleteUser } from "../controller/user
 
 
 
-
-
 // Create a new router instance
 const router = Router();
 
@@ -39,7 +37,7 @@ router.get("/user/get_user/:userName", userByName);
  * Get /user/deleteUser/:userName
  * The actual logic is handled by the controller function deleteUser within the userController
  */
-router.get("/user/delete_user/:userName", deleteUser);
+router.delete("/user/delete_user/", deleteUser);
 
 
 // Export the router for use in other parts of the application

@@ -18,6 +18,6 @@ const folderSchema: Schema = new Schema<Vfolder>({
     updatedAt: {type: Date, default: Date.now()}
 });
 
-const folder: Model<Vfolder> = mongoose.model<Vfolder>("Folder", folderSchema, "folders_collection");
+const Folder: Model<Vfolder> = mongoose.model<Vfolder>("Folder", folderSchema, "folders_collection");
 
-export default folder;
+export default Folder;

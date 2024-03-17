@@ -23,6 +23,6 @@ const noteSchema: Schema = new Schema<Vnote>({
     updatedAt: {type: Date, default: Date.now()}
 });
 
-const note: Model<Vnote> = mongoose.model<Vnote>("Note", noteSchema, "notes_collection");
+const Note: Model<Vnote> = mongoose.model<Vnote>("Note", noteSchema, "notes_collection");
 
-export default note;
+export default Note;
