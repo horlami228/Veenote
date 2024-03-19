@@ -3,21 +3,7 @@ import {Request, Response} from 'express';
 // Importing the User model from the userModel.js file, which defines the schema for the user documents in the MongoDB database.
 import Note from '../model/noteModel.js';
 import Folder from '../model/folderModel.js';
-// Importing the base model from the baseModel.ts file, which defines generic functions
-
-
-// Function to generate a formatted date and time string
-function getFormattedDateTime() {
-    const date = new Date();
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Add leading zero for single-digit months
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    const seconds = String(date.getSeconds()).padStart(2, '0');
-  
-    return `${year}-${month}-${day}-${hours}-${minutes}-${seconds}`;
-  }
+import getFormattedDateTime from '../utilities/dateTimeGenerator.js';
 
 // Define the 'createUser' controller function as an asynchronous function to handle POST requests for creating a new user.
 export const createNote = async (req: Request, res: Response) => {
@@ -28,15 +14,15 @@ export const createNote = async (req: Request, res: Response) => {
       }
   
       // Ensure required fields are present
-      if (!req.body.id || !req.body.content) {
-        return res.status(400).json({ message: "ID and content are required fields" });
+      if (!req.body.content) {
+        return res.status(400).json({ message: "content is a required field" });
       }
   
       // Set default filename if missing
-      req.body.fileName = req.body.fileName || `default-${getFormattedDateTime()}`;
+      const fileName = req.body.fileName || `default-${getFormattedDateTime()}`;
   
       // Find the associated folder
-      const folder = await Folder.findOne({ userId: req.body.id });
+      const folder = await Folder.findOne({ userId: req.body.userId });
   
       if (!folder) {
         return res.status(404).json({ message: "Folder not found" });
@@ -44,7 +30,7 @@ export const createNote = async (req: Request, res: Response) => {
   
       // Create the note data object
       const noteData = {
-        fileName: req.body.fileName,
+        fileName: fileName,
         content: req.body.content,
         userId: req.body.id,
         folderId: folder._id
