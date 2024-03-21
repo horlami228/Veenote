@@ -2,8 +2,19 @@
 import {Request, Response} from 'express';
 // Importing the User model from the userModel.js file, which defines the schema for the user documents in the MongoDB database.
 import Folder from '../model/folderModel.js';
-// Importing the base model from the baseModel.ts file, which defines generic functions
+import Note from '../model/noteModel.js';
+import mongoose from 'mongoose';
+import { getModelBy } from '../utilities/dbFunctions.js';
 
+const objectId = mongoose.Types.ObjectId;
+
+interface filterdNotes {
+    title: string;
+    content: string;
+    fileName: string;
+    createdAt: string;
+    updatedAt: string;
+}
 
 // Define the 'createUser' controller function as an asynchronous function to handle POST requests for creating a new user.
 export const createFolder = async  (req: Request, res: Response) => {
@@ -15,7 +26,7 @@ export const createFolder = async  (req: Request, res: Response) => {
             return res.status(400).json({"Error": "Not a valid JSON"});
         } else if (!("folderName" in req.body)) {
             // Responds with a 400 Bad Request error if the 'folderNmae' field is missing in the request body.
-            return res.status(400).json({"Error": "Missing FolderName"});
+            return res.status(400).json({"Error": "Missing folder name"});
         }
         // Extracts the data from the request body.
         const folderData = {
@@ -47,7 +58,7 @@ export const createFolder = async  (req: Request, res: Response) => {
 };
 
 
-export const getRootFolder = (req: Request, res: Response) => {
+export const getRootFolder = async (req: Request, res: Response) => {
     // use the 'find' method on the Folder model to find a root folder by the user_id
     // This returns a promise
 
@@ -73,4 +84,57 @@ export const getRootFolder = (req: Request, res: Response) => {
             "Details": error.message
         });
     });
+};
+
+export const getNotesForFolder = async (req: Request, res: Response) => {
+    // Get all Notes for a folder
+    const folderId = req.params.folderId; // retreive folderId from request
+    let objFolderId: mongoose.Types.ObjectId;
+    try {
+        objFolderId = new objectId(folderId); // convert folderId to objectId
+    } 
+    catch (error) {
+        return res.status(400).json({message: "Invalid folderId"});
+    }
+   
+    //get all notes to a folder
+    getModelBy(Note, 'folderId', objFolderId)
+    .then((notes) => {
+        if (notes.length === 0) {
+            return res.status(400).json({message: "Folder is empty"});
+        }
+        
+        const filteredNotes: filterdNotes[] = notes.map((note: any) => ({
+            fileName: note.fileName,
+            title: note.title,
+            content: note.content,
+            createdAt: note.createdAt,
+            updatedAt: note.updatedAt
+        }));
+        (getModelBy(Folder, '_id', objFolderId))
+        .then((folder: any) => {
+            if (folder.length === 0) {
+                return res.status(404).json({message: "Folder not found"});
+            }
+
+        // return all notes in that folder
+            res.status(200).json({
+                "folders": [
+                    {
+                        "folderId": folder[0]._id,
+                        "folderName": folder[0].folderName,
+                        "notes": filteredNotes
+                    }
+                ]
+            });
+        });
+    })
+    .catch(error => {
+        if (error instanceof Error) {
+            // error with the query
+            res.status(500).json({
+                message: error.message
+            });
+        }
+    });     
 };
