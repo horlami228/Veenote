@@ -2,7 +2,6 @@
 import {Request, Response} from 'express';
 // Importing the User model from the userModel.js file, which defines the schema for the user documents in the MongoDB database.
 import User from '../model/userModel.js';
-// Importing the base model from the baseModel.ts file, which defines generic functions
 import Folder from '../model/folderModel.js';
 
 // Define the 'createUser' controller function as an asynchronous function to handle POST requests for creating a new user.

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createFolder, getRootFolder } from '../controller/folderController.js';
+import { createFolder, getRootFolder, getNotesForFolder } from '../controller/folderController.js';
 
 // Create a new router instance
 const router = Router();
@@ -17,7 +17,12 @@ router.post('/user/create', createFolder);
  * GET /folder/getRoot
  */
 
-router.get('/folder/rootfolder', getRootFolder);
+router.get('/user/folder/rootfolder', getRootFolder);
 
+/**
+ * Route for getting notes in a folder
+* GET /user/folder/<folderId>/notes
+ */
+router.get('/user/folder/:folderId/notes', getNotesForFolder);
 
 export default router;
