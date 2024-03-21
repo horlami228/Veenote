@@ -1,28 +1,38 @@
-// Importing necessary modules from the 'express' package to handle HTTP requests and responses.
 import {Request, Response} from 'express';
-// Importing the User model from the userModel.js file, which defines the schema for the user documents in the MongoDB database.
 import User from '../model/userModel.js';
-// Importing the base model from the baseModel.ts file, which defines generic functions
 import Folder from '../model/folderModel.js';
+import { hashPassword } from '../utilities/passwordHashing.js';
 
 // Define the 'createUser' controller function as an asynchronous function to handle POST requests for creating a new user.
 export const createUser = async  (req: Request, res: Response) => {
     
     try {
             // Validates the incoming request to ensure it contains a body with JSON data.
-        if (!req.body) {
-            // Responds with a 400 Bad Request error if the request body is missing.
-            return res.status(400).json({"Error": "Not a valid JSON"});
+        if (Object.keys(req.body).length === 0) {
+            res.status(400).send({ message: "Content can not be empty!" });
+            return;
         } else if (!("userName" in req.body)) {
             // Responds with a 400 Bad Request error if the 'userName' field is missing in the request body.
             return res.status(400).json({"Error": "Missing Username"});
         } else if (!("email" in req.body)) {
             // Responds with a 400 Bad Request error if the 'email' field is missing in the request body.
             return res.status(400).json({"Error": "Missing Email"});
+        } else if (!("password" in req.body)) {
+            // Responds with a 400 Bad Request error if the 'password' field is missing in the request body.
+            return res.status(400).json({"Error": "Missing Password"});
         }
 
+        const password = req.body.password;
+
+        // Hash the password
+        req.body.password = await hashPassword(password);
+
         // Extracts the data from the request body.
-        const data = req.body;
+        const data = {
+            userName: req.body.userName,
+            email: req.body.email,
+            password: req.body.password
+        };
 
         // Initializes a new instance of the User model with the extracted data.
         const new_user = new User(data);
@@ -57,7 +67,6 @@ export const createUser = async  (req: Request, res: Response) => {
 };
 
 
-// Export the 'allUsers' function to handle GET requests for retrieving all users.
 export const allUsers = (req: Request, res: Response) => {
     // Use the 'find' method on the User model to query the database.
     // This returns a Promise.
@@ -83,7 +92,6 @@ export const allUsers = (req: Request, res: Response) => {
 };
 
 
-// Export the 'userByName' function to handle GET requests for retrieving a user
 export const userByName = (req: Request, res: Response) => {
     // use the 'find' method on the User model to find a user by the userName
     // This returns a promise
@@ -112,7 +120,7 @@ export const userByName = (req: Request, res: Response) => {
     });
 };
 
-// export the deleteUser function to handle get request for deleting a user
+
 export const deleteUser = (req: Request, res: Response) => {
     const id: string = req.params.userName;
 
@@ -132,4 +140,6 @@ export const deleteUser = (req: Request, res: Response) => {
         });
     });
 };
+
+
 
