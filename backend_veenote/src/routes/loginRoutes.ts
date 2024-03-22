@@ -1,5 +1,5 @@
 import {Router} from 'express';
-import { loginMiddleWare, logout } from '../controller/auth/authController.js';
+import { loginMiddleWare, logout, authMiddleWare } from '../controller/auth/authController.js';
 
 /**
  * This is the route for login
@@ -8,7 +8,7 @@ import { loginMiddleWare, logout } from '../controller/auth/authController.js';
 
 const router = Router();
 
-router.post('/login', loginMiddleWare);
+router.post('/login', loginMiddleWare, authMiddleWare);
 
 /**
  * This the route for logout
@@ -17,3 +17,4 @@ router.post('/login', loginMiddleWare);
 
 router.post('/logout', logout);
 
+export default router;

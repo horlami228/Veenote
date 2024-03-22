@@ -11,7 +11,7 @@ export const loginMiddleWare = async (req: Request, res: Response, next: NextFun
         if (Object.keys(req.body).length === 0) {
         res.status(400).send({ message: "Content can not be empty!" });
         return;
-        } else if (!("email" in req.body) && !("userName" in req.body)) {
+        } else if (!("userNameOrEmail" in req.body)) {
         // Responds with a 400 Bad Request error if the 'email' field is missing in the request body.
         return res.status(400).json({ Error: "Missing Email or UserName" });
         } else if (!("password" in req.body)) {
@@ -20,10 +20,10 @@ export const loginMiddleWare = async (req: Request, res: Response, next: NextFun
         }
     
         // Extracts the email/userName and password from the request body.
-        const { emailOrUserName, password } = req.body;
+        const { userNameOrEmail, password } = req.body;
     
         // Find the user with the provided email in the MongoDB database.
-        const user = await User.findOne({ $or: [{ email: emailOrUserName }, { userName: emailOrUserName }]});
+        const user = await User.findOne({ $or: [{ email: userNameOrEmail }, { userName: userNameOrEmail }]});
     
         // Respond with a 404 Not Found error if the user is not found in the database.
         if (!user) {
@@ -39,9 +39,8 @@ export const loginMiddleWare = async (req: Request, res: Response, next: NextFun
         }
     
         // Respond with a 200 OK status and the user data in JSON format if the login is successful.
-        res.status(200).json({ User: user });
-        req.user = user;
-        next();
+        (req as Request & { user: any }).user = user;
+        next(); // Call the next middleware function
     } catch (error) {
         // Catches any errors that occur during the execution of the try block.
         if (error instanceof Error) {
@@ -59,9 +58,9 @@ export const logout = (req: Request, res: Response) => {
 };
 
 
-export const authMiddleWare = async (req: Request, res: Response, next) => {
-    if (req.user) {
-        res.json({ message: "User is authenticated" });
+export const authMiddleWare = async (req: Request, res: Response, next: NextFunction) => {
+    if ((req as Request & { user: any }).user) {
+        res.status(200).json({ message: "User is authenticated", user: (req as Request & { user: any }).user });
     }
     else {
         res.status(401).json({ message: "User is not authenticated" });
