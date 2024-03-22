@@ -1,16 +1,24 @@
 // Import required modules and components
 import express from 'express';
+import { Request, Response, NextFunction } from 'express';
 import userRoutes from "./routes/userRoutes.js";
 import folderRoutes from './routes/folderRoutes.js';
 import noteRoutes from './routes/noteRoutes.js';
+import loginRoutes from './routes/loginRoutes.js';
 import swaggerSpec from './swaggerConfig.js';
 import swaggerUi from 'swagger-ui-express';
+import cors from 'cors';
 
 // Initialize Express app
 const app = express();
 
 // Set default port or use provided PORT environment variable
 const PORT = process.env.PORT || 8000;
+
+// Enable CORS
+app.use(cors({
+    origin: 'http://localhost:3000', // Allow all origins
+}));
 
 // Middleware configuration
 // Enable express to parse JSON data
@@ -28,11 +36,21 @@ app.use('/api/v1', folderRoutes);
 
 app.use('/api/v1', noteRoutes);
 
+app.use('/api/v1', loginRoutes);
+
 // A custom 404 'not found' middleware
 app.use((req, res, next) => {
     res.status(404).send("404 Page Not Found");
     next();
 });
+
+// Error handling middleware
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+    console.error(err.stack);
+    res.status(500).send('Internal Server Error');
+    next();
+});
+
 
 
 // Start the server

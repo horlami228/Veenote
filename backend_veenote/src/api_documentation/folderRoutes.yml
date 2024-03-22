@@ -46,7 +46,7 @@
         required: true
         description: UUser id of the root folder to retrieve
     tags:
-      - Folders
+      - Folder
     responses:
       200:
         description: Successful user returned
