@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { createFolder, getRootFolder, getNotesForFolder } from '../controller/folderController.js';
+import { authMiddleWare } from "../controller/auth/authController.js";
 
 // Create a new router instance
 const router = Router();
@@ -23,6 +24,6 @@ router.get('/user/folder/rootfolder', getRootFolder);
  * Route for getting notes in a folder
 * GET /user/folder/<folderId>/notes
  */
-router.get('/user/folder/:folderId/notes', getNotesForFolder);
+router.get('/user/folder/:folderId/notes', authMiddleWare, getNotesForFolder);
 
 export default router;

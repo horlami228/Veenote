@@ -3,9 +3,17 @@
 import { Request, Response, NextFunction } from "express";
 import User from "../../model/userModel.js";
 import { comparePassword } from "../../utilities/passwordHashing.js";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+
+// Load the JWT secret key from the .env file
+dotenv.config({ path: "./dist/src/config/.env"});
+
+const secretKey = process.env.JWT_SECRET_KEY as string; // Secret key for JWT
+console.log(secretKey);
 
 // Define the 'login' controller function as an asynchronous function to handle POST requests for user login.
-export const loginMiddleWare = async (req: Request, res: Response, next: NextFunction) => {
+export const login = async (req: Request, res: Response) => {
     try {
         // Validates the incoming request to ensure it contains a body with JSON data.
         if (Object.keys(req.body).length === 0) {
@@ -25,9 +33,9 @@ export const loginMiddleWare = async (req: Request, res: Response, next: NextFun
         // Find the user with the provided email in the MongoDB database.
         const user = await User.findOne({ $or: [{ email: userNameOrEmail }, { userName: userNameOrEmail }]});
     
-        // Respond with a 404 Not Found error if the user is not found in the database.
+        // Respond with a 401 Unauthorized error if the user is not found in the database.
         if (!user) {
-        return res.status(404).json({ Error: "User not found" });
+        return res.status(401).json({ Error: "Authenication failed" });
         }
     
         // Compare the provided password with the hashed password stored in the database.
@@ -35,12 +43,13 @@ export const loginMiddleWare = async (req: Request, res: Response, next: NextFun
     
         // Respond with a 401 Unauthorized error if the passwords do not match.
         if (!isMatch) {
-        return res.status(401).json({ Error: "Invalid Password" });
+        return res.status(401).json({ Error: "Authentication failed" });
         }
     
-        // Respond with a 200 OK status and the user data in JSON format if the login is successful.
-        (req as Request & { user: any }).user = user;
-        next(); // Call the next middleware function
+        // Respond with a 200 OK status and the jwt token if the login is successful.
+        const jwtToken = jwt.sign({ id: user._id, email: user.userName }, secretKey, {expiresIn: "1h"});
+        return res.status(200).json({ message: "User logged in successfully", token: jwtToken });
+
     } catch (error) {
         // Catches any errors that occur during the execution of the try block.
         if (error instanceof Error) {
@@ -51,19 +60,34 @@ export const loginMiddleWare = async (req: Request, res: Response, next: NextFun
 };
 
 
+
+export const authMiddleWare = async (req: Request, res: Response, next: NextFunction) => {
+    // Verify jwt token
+    // Extract token from Authorization header
+    const authHeader = req.header("Authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return res.status(403).json({ Error: "Access Denied. Missing or invalid Authorization header." });
+    }
+      
+    const token = authHeader.split(" ")[1]; // Remove "Bearer " prefix
+    console.log(token);
+
+    if (!token) {
+        return res.status(401).json({ Error: "Access Denied" });
+    }
+    try {
+        const decoded = jwt.verify(token, secretKey);
+        (req as Request & { user: any }).user = decoded;
+        next();
+    } catch (error) {
+        if (error instanceof Error) {
+            res.status(400).json({ Error: error.message });
+        }
+    }
+};
+
 // Define the 'logout' controller function to handle POST requests for user logout.
 export const logout = (req: Request, res: Response) => {
     // Respond with a 200 OK status and a success message when the user logs out.
     res.status(200).json({ message: "User logged out successfully" });
-};
-
-
-export const authMiddleWare = async (req: Request, res: Response, next: NextFunction) => {
-    if ((req as Request & { user: any }).user) {
-        res.status(200).json({ message: "User is authenticated", user: (req as Request & { user: any }).user });
-    }
-    else {
-        res.status(401).json({ message: "User is not authenticated" });
-    }
-   
 };

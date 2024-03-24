@@ -1,5 +1,5 @@
 import {Router} from 'express';
-import { loginMiddleWare, logout, authMiddleWare } from '../controller/auth/authController.js';
+import { login, logout, authMiddleWare } from '../controller/auth/authController.js';
 
 /**
  * This is the route for login
@@ -8,13 +8,13 @@ import { loginMiddleWare, logout, authMiddleWare } from '../controller/auth/auth
 
 const router = Router();
 
-router.post('/login', loginMiddleWare, authMiddleWare);
+router.post('/login', login);
 
 /**
  * This the route for logout
  * POST /api/v1/logout
  */
 
-router.post('/logout', logout);
+router.post('/logout', authMiddleWare, logout);
 
 export default router;
