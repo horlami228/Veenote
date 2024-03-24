@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import axios from 'axios';
+import Link from 'next/link';
 
 export default function Login() {
   const [loginData, setLoginData] = useState({
@@ -9,6 +10,7 @@ export default function Login() {
     password: '',
   });
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleChange = (event) => {
     setLoginData({
@@ -23,13 +25,25 @@ export default function Login() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    
     // Handle login logic here
     try {
       const response = await axios.post('http://localhost:8000/api/v1/login', loginData);
       console.log(response);
+      setLoginData({
+        userNameOrEmail: '',
+        password: '',
+      });
     }
     catch (error) {
       console.error(error);
+
+      if (error.response && error.response.status === 401) {
+        setErrorMessage("Invalid username or password. Please try again.");
+      }
+      else {
+        setErrorMessage('An error occurred. Please try again later.');
+      }
     }
   };
 
@@ -38,6 +52,8 @@ export default function Login() {
       <div className="px-8 py-6 mt-4 text-left bg-white shadow-lg rounded-lg">
         <h3 className="text-2xl font-bold text-center">Login to Veenote</h3>
         <form onSubmit={handleSubmit}>
+          {/* if error message*/}
+          {errorMessage && <p className="text-red-500 text-center">{errorMessage}</p>}
           <div className="mt-4">
             <label className="block" htmlFor="usernameOrEmail">Username or Email</label>
             <input
@@ -70,16 +86,20 @@ export default function Login() {
               onClick={togglePasswordVisibility}
               className="ml-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-md mt-8"
             >
-              {isPasswordVisible ? (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
+            {isPasswordVisible ? (
+              // Crossed Eye SVG Icon
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3l18 18" /> {/* This line adds a "cross" effect */}
+              </svg>
               ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825L10.05 15m-6.9-3C4.732 7.943 8.523 5 13 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-1.386 0-2.72-.305-3.95-.842M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
+              // Eye SVG Icon
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825L10.05 15m-6.9-3C4.732 7.943 8.523 5 13 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-1.386 0-2.72-.305-3.95-.842M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
               )}
+
             </button>
           </div>
           <div className="mt-4">
@@ -91,6 +111,9 @@ export default function Login() {
             </button>
           </div>
         </form>
+        <div className="mt-4 text-center">
+          <p> Don't have an account? <Link href="/register" className="text-blue-600 hover:text-blue-800"> Sign Up </Link></p>
+        </div>
       </div>
     </div>
   );
