@@ -8,6 +8,7 @@ import authRoutes from './routes/authRoutes.js';
 import swaggerSpec from './swaggerConfig.js';
 import swaggerUi from 'swagger-ui-express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 
 // Initialize Express app
 const app = express();
@@ -17,8 +18,12 @@ const PORT = process.env.PORT || 8000;
 
 // Enable CORS
 app.use(cors({
-    origin: 'http://localhost:3000', // Allow all origins
+    origin: 'http://localhost:3000',
+    credentials: true
 }));
+
+// Enable cookie parser
+app.use(cookieParser());
 
 // Middleware configuration
 // Enable express to parse JSON data

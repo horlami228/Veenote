@@ -43,7 +43,7 @@ export const createUser = async  (req: Request, res: Response) => {
         // Create the root folder for the user
         const folderData = {
             folderName: "ROOT FOLDER",
-            is_root: true,
+            isRoot: true,
             userId: user.id
         };
 

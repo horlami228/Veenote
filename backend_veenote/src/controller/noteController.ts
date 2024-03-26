@@ -4,35 +4,55 @@ import {Request, Response} from 'express';
 import Note from '../model/noteModel.js';
 import Folder from '../model/folderModel.js';
 import getFormattedDateTime from '../utilities/dateTimeGenerator.js';
+import User from '../model/userModel.js';
 
 // Define the 'createUser' controller function as an asynchronous function to handle POST requests for creating a new user.
 export const createNote = async (req: Request, res: Response) => {
     try {
       // Validate request body
       if (!req.body) {
-        return res.status(400).json({ message: "Not a valid JSON" });
+        return res.status(400).json({
+          errorCode: 'Missing body',
+          errorMessage: "Request body is required",
+          errorDetails: "The request body is missing. Please provide the required data."
+      });
       }
   
       // Ensure required fields are present
       if (!req.body.content) {
-        return res.status(400).json({ message: "content is a required field" });
+        return res.status(400).json({
+          errorCode: 'MissingContent',
+          errorMessage: "content is a required field",
+          errorDetails: "The 'content' field is not present in the request body."
+      });
       }
   
       // Set default filename if missing
       const fileName = req.body.fileName || `default-${getFormattedDateTime()}`;
+      
+      // Get the user from the request object
+      const me = (req as Request & { user: any }).user;
+      console.log(me);
+
+      // Find the associated user
+      const user = await User.findOne({ _id: me.id });
   
-      // Find the associated folder
-      const folder = await Folder.findOne({ userId: req.body.userId });
-  
-      if (!folder) {
-        return res.status(404).json({ message: "Folder not found" });
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
       }
-  
+
+      // Find the associated folder
+      const folder = await Folder.findOne({ userId: user._id, isRoot: true});
+
+      if (!folder) {
+        return res.status(404).json({ message: "Root folder not found" });
+      }
+
       // Create the note data object
       const noteData = {
         fileName: fileName,
         content: req.body.content,
-        userId: req.body.id,
+        userId: user._id,
         folderId: folder._id
       };
   
@@ -44,11 +64,20 @@ export const createNote = async (req: Request, res: Response) => {
     } catch (error) {
       // Handle all errors gracefully
       if (error instanceof Error) {
-        res.status(500).json({ "message": "Error creating note", 
-        "Error": error.message });
+        // Checking if the error is a MongoDB duplicate key error
+        if ((error as any).code === 11000) {
+          return res.status(400).json({
+            errorCode: 'DuplicateFileName',
+            errorMessage: "Note with the provided fileName already exists",
+            errorDetails: "A note with the same fileName already exists in the database. Please use a unique fileName."
+        });
+        }
+
+        // Generic error handling
+        res.status(500).json({ message: "Error creating note", details: error.message });
       }
     }
-  };
+};
   
 
 export const getAllNotes = (req: Request, res: Response) => {

@@ -47,7 +47,7 @@ export const login = async (req: Request, res: Response) => {
         }
     
         // Respond with a 200 OK status and the jwt token if the login is successful.
-        const jwtToken = jwt.sign({ id: user._id, email: user.userName }, secretKey, {expiresIn: "1h"});
+        const jwtToken = jwt.sign({ id: user._id }, secretKey, {expiresIn: "1h"});
         return res.status(200).json({ message: "User logged in successfully", token: jwtToken });
 
     } catch (error) {
@@ -61,20 +61,15 @@ export const login = async (req: Request, res: Response) => {
 
 
 
-export const authMiddleWare = async (req: Request, res: Response, next: NextFunction) => {
-    // Verify jwt token
-    // Extract token from Authorization header
-    const authHeader = req.header("Authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        return res.status(403).json({ Error: "Access Denied. Missing or invalid Authorization header." });
-    }
-      
-    const token = authHeader.split(" ")[1]; // Remove "Bearer " prefix
+export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
+    // Extract token from cookies
+    const token = req.cookies['token'];
     console.log(token);
 
     if (!token) {
-        return res.status(401).json({ Error: "Access Denied" });
+        return res.status(403).json({ Error: "Access Denied. No token provided." });
     }
+
     try {
         const decoded = jwt.verify(token, secretKey);
         (req as Request & { user: any }).user = decoded;
@@ -85,6 +80,7 @@ export const authMiddleWare = async (req: Request, res: Response, next: NextFunc
         }
     }
 };
+
 
 // Define the 'logout' controller function to handle POST requests for user logout.
 export const logout = (req: Request, res: Response) => {

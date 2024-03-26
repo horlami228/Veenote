@@ -14,7 +14,7 @@ interface Vnote extends Document {
 }
 
 const noteSchema: Schema = new Schema<Vnote>({
-    fileName: {type: String},
+    fileName: {type: String, unique: true},
     content: {type: String, required: true},
     userId: {type: Schema.Types.ObjectId, ref: "User"},
     folderId: {type: Schema.Types.ObjectId, ref: "Folder"},

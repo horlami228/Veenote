@@ -12,8 +12,8 @@ interface Vuser extends Document {
 }
 
 const userSchema: Schema = new Schema<Vuser> ({
-    userName: {type: String, required: [true, "userName is required"]},
-    email: {type: String, required: [true, "email is required"]},
+    userName: {type: String, required: [true, "userName is required"], unique: true},
+    email: {type: String, required: [true, "email is required"], unique: true},
     password: {type: String, required: [true, "password is required"]},
     createdAt: {type: Date, default: Date.now()},
     updatedAt: {type: Date, default: Date.now()}
