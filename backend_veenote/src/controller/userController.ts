@@ -34,6 +34,11 @@ export const createUser = async  (req: Request, res: Response) => {
             password: req.body.password
         };
 
+        const userExists = await User.findOne({ $or: [{ email: data.email }, { userName: data.userName }] });
+        if (userExists) {
+            return res.status(400).json({ "Error": "User with the provided email or username already exists" });
+        }
+
         // Initializes a new instance of the User model with the extracted data.
         const new_user = new User(data);
 
@@ -56,6 +61,14 @@ export const createUser = async  (req: Request, res: Response) => {
     } catch(error) {
         // Catches any errors that occur during the execution of the try block.
         if (error instanceof Error) {
+
+            if ((error as any).code === 11000) {
+                return res.status(400).json({
+                  errorCode: 'UserExists',
+                  errorMessage: "User with the provided email or username already exists",
+                  errorDetails: "A user with the same email or username already exists in the database. Please use a unique email or username."
+              });
+            }
             // Responds with a 500 Internal Server Error status and the error details if an exception occurs.
             res.status(500).json({
                 "Error": "Error Creating A User",

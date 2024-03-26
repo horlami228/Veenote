@@ -30,13 +30,13 @@ const TranscriptionEditor = ({ transcriptionText, onSave }) => {
       return; // Exit early if there's an error
     }
 
-    if (!filename.trim()) {
-      notification.error({
-        message: 'Error',
-        description: 'Filename is empty',
-      });
-      return; // Exit early if there's an error
-  };
+  //   if (!filename.trim()) {
+  //     notification.error({
+  //       message: 'Error',
+  //       description: 'Filename is empty',
+  //     });
+  //     return; // Exit early if there's an error
+  // };
 
   onSave(text, filename);
   setText('');

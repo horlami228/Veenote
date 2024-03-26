@@ -167,6 +167,10 @@ function VoiceRecorder() {
           setError('An error occurred. Please check your input and try again.');
         }
       }
+      notification.error({
+        message: 'Save Error',
+        description: 'Failed to save transcription. Please try again.'
+      });
     });
   };
 
