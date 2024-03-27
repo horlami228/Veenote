@@ -149,3 +149,5 @@ export const config: Config = {
 test.ts
 
 config.ts
+
+.env

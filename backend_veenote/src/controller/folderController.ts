@@ -9,11 +9,11 @@ import { getModelBy } from '../utilities/dbFunctions.js';
 const objectId = mongoose.Types.ObjectId;
 
 interface filterdNotes {
-    title: string;
     content: string;
     fileName: string;
     createdAt: string;
     updatedAt: string;
+    id: string;
 }
 
 // Define the 'createUser' controller function as an asynchronous function to handle POST requests for creating a new user.
@@ -106,7 +106,7 @@ export const getNotesForFolder = async (req: Request, res: Response) => {
         
         const filteredNotes: filterdNotes[] = notes.map((note: any) => ({
             fileName: note.fileName,
-            title: note.title,
+            id: note._id,
             content: note.content,
             createdAt: note.createdAt,
             updatedAt: note.updatedAt

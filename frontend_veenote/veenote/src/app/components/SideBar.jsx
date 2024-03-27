@@ -2,14 +2,18 @@ import {
   UserOutlined, FolderOpenOutlined, DownOutlined, RightOutlined,
   LeftOutlined, SettingOutlined, SearchOutlined, MenuOutlined, CloseOutlined,
 } from '@ant-design/icons';
-import { Menu, Dropdown, Input } from 'antd';
+import { MoreOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Menu, Dropdown, Input, Modal } from 'antd';
 import { useState, useEffect } from 'react';
 
-const SidebarComponent = ({ username, notes }) => {
+const SidebarComponent = ({ username, notes, onNoteSelect, onDelete, onRename }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [isMobileSidebarVisible, setIsMobileSidebarVisible] = useState(false);
   const [isLargeScreen, setIsLargeScreen] = useState(false);
+  const [isRenaming, setIsRenaming] = useState(null);  // To track which note is being renamed
+  const [newName, setNewName] = useState('');  // To hold the new name being entered
+
 
   useEffect(() => {
     // Define a function to update the state based on the window's width
@@ -38,7 +42,37 @@ const SidebarComponent = ({ username, notes }) => {
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
   };
+  console.log('The onNoteSelect is a', typeof onNoteSelect); // Should output 'function'
+  
+  const showDeleteConfirm = (noteId) => {
+    Modal.confirm({
+      title: 'Are you sure you want to delete this note?',
+      content: 'This action cannot be undone.',
+      okText: 'Yes',
+      okType: 'danger',
+      cancelText: 'No',
+      onOk() {
+        onDelete(noteId);
+      },
+    });
+  };
 
+  const startRenaming = (note, e) => {
+    e.stopPropagation();  // Prevent the click event from bubbling up
+    setIsRenaming(note.id);
+    setNewName(note.title);
+  };
+  
+  
+  const handleRenameConfirm = (noteId) => {
+    if (newName.trim() !== '') {
+      // Pass the new name up to the parent component
+      onRename(noteId, newName);
+      setIsRenaming(null);
+      setNewName('');
+    }
+  };
+  
     // Dropdown menu for user settings
     const userMenu = (
       <Menu>
@@ -54,11 +88,59 @@ const SidebarComponent = ({ username, notes }) => {
       </Menu>
     );
   
-    // Dropdown menu for notes
     const notesMenu = (
       <Menu className="overflow-y-auto max-h-72">
         {notes.map((note, index) => (
-          <Menu.Item key={note.id}>{note.title}</Menu.Item>
+          <Menu.Item key={note.id}>
+            <div className="flex justify-between items-center">
+            {isRenaming === note.id ? (
+              <Input
+              value={newName}
+              onChange={(e) => {
+                e.stopPropagation(); // Prevent event propagation
+                setNewName(e.target.value);
+              }}
+              onPressEnter={(e) => {
+                e.stopPropagation(); // Prevent event propagation
+                handleRenameConfirm(note.id);
+              }}
+              onBlur={(e) => {
+                e.stopPropagation(); // Prevent event propagation
+                handleRenameConfirm(note.id);
+              }}
+              autoFocus
+            />
+       
+            ) : ( <div
+                className="flex-grow cursor-pointer hover:underline"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onNoteSelect(note)
+                }}
+              >
+                {note.title}
+              </div>
+            )}
+              <Dropdown
+                overlay={
+                  <Menu>
+                    <Menu.Item key="rename" icon={<EditOutlined />}>
+                    <button onClick={(e) => startRenaming(note, e)} style={{ all: 'unset' }}>
+                      Rename
+                    </button>
+                    </Menu.Item>
+                    <Menu.Item key="delete" icon={<DeleteOutlined />}  onClick={(e) => showDeleteConfirm(note.id)
+                    }>
+                      Delete
+                    </Menu.Item>
+                  </Menu>
+                }
+                trigger={['click']}
+              >
+                <MoreOutlined className="cursor-pointer" onClick={(e) => e.stopPropagation()} />
+              </Dropdown>
+            </div>
+          </Menu.Item>
         ))}
       </Menu>
     );

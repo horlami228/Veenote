@@ -5,6 +5,7 @@ import userRoutes from "./routes/userRoutes.js";
 import folderRoutes from './routes/folderRoutes.js';
 import noteRoutes from './routes/noteRoutes.js';
 import authRoutes from './routes/authRoutes.js';
+import awsRoutes from './routes/awsRoutes.js';
 import swaggerSpec from './swaggerConfig.js';
 import swaggerUi from 'swagger-ui-express';
 import cors from 'cors';
@@ -42,6 +43,8 @@ app.use('/api/v1', folderRoutes);
 app.use('/api/v1', noteRoutes);
 
 app.use('/api/v1', authRoutes);
+
+app.use('/api/v1/aws', awsRoutes);
 
 // A custom 404 'not found' middleware
 app.use((req, res, next) => {

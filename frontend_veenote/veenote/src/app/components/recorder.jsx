@@ -22,6 +22,9 @@ function VoiceRecorder() {
   const { state } = useAuth();
   const router = useRouter();
   
+  useEffect(() => {
+    setTranscriptionText(transcriptionText);
+  }, [transcriptionText]);
 
   const handleDataAvailable = (event) => {
     console.log('Data available from recording...');
@@ -33,22 +36,43 @@ function VoiceRecorder() {
     }
   };
 
-
   const handleStop = () => {
     console.log('Recording stopped.');
     if (audioChunksRef.current.length > 0) {
       const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
       console.log(`Final audio blob size: ${audioBlob.size}`);
       if (audioBlob.size > 0) {
-        const audioUrl = URL.createObjectURL(audioBlob);
-        const downloadLink = document.createElement('a');
-        downloadLink.href = audioUrl;
-        downloadLink.setAttribute('download', 'recording.wav');
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        document.body.removeChild(downloadLink);
+        const formData = new FormData();
+        formData.append('audio', audioBlob, 'recording.wav');
+  
+        // Replace 'YOUR_BACKEND_ENDPOINT' with your actual endpoint URL
+        axios.post('http://localhost:8000/api/v1/aws/upload', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+          withCredentials: true,
+        })
+        .then((response) => {
+          console.log('Success:', response.data);
+          console.log('s3Uri', response.data.s3Uri);
+          notification.success({
+            message: 'Recording Uploaded',
+            description: 'Your recording has been uploaded successfully.'
+          })
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+          notification.error({
+            message: 'Upload Error',
+            description: 'Failed to upload the recording. Please try again.'
+          });
+        });
       } else {
         console.log('No audio data was captured.');
+        notification.error({
+          message: 'Recording Error',
+          description: 'No audio data was captured. Please try again.'
+        });
       }
     } else {
       console.log('No audio chunks were captured.');
@@ -122,65 +146,9 @@ function VoiceRecorder() {
   //   fetchTranscription();
   // }, []);
 
-  const handleTranscriptionSave = (text, filename) => {
-    setError('');  // Clear any previous errors
-    console.log('Saving', { text, filename });
-      // Initialize the data object with content
-    let data = {
-      content: text
-    };
-
-    // Add fileName to the data object only if filename is not empty
-    if (filename !== '') {
-      data.fileName = filename;
-    }
-    // Implement the saving logic here, e.g., API call or localStorage update
-    axios.post('http://localhost:8000/api/v1/user/create/note/new', data, {
-      withCredentials: true,
-    })
-    .then((response) => {
-      console.log(response);
-      notification.success({
-        message: 'Save Success',
-      })
-    })
-    .catch((error) => {
-      console.error('Error saving transcription:', error);
-      if (error.response && error.response.status === 403) {
-        notification.error({
-          message: 'Save Error',
-          description: 'You are not authorized to save transcriptions. Please login.'
-        });
-        router.push('/login');
-      } else if (error.response && error.response.status === 403) {
-        notification.error({
-          message: 'Save Error',
-          description: 'Failed to save transcription. Please try again.'
-        });
-      } else if (error.response && error.response.status === 400) {
-        if (error.response.data.errorCode === 'DuplicateFileName') {
-          setError('Filename already exists. Please choose a different filename.');
-        } else if (error.response.data.errorCode === 'MissingContent') {
-          setError('Content is missing. Please ensure all required fields are filled.');
-        } else {
-          // Fallback error message if the specific error is not recognized
-          setError('An error occurred. Please check your input and try again.');
-        }
-      }
-      notification.error({
-        message: 'Save Error',
-        description: 'Failed to save transcription. Please try again.'
-      });
-    });
-  };
 
   return (
     <div>
-      <div className="w-full max-w-3xl mx-auto mb-5 justify-center">
-        <TranscriptionEditor transriptionText={transcriptionText}
-        onSave={handleTranscriptionSave}/>
-      </div>
-
       {!state.isAuthenticated && (
       <div className="absolute top-5 right-5">
         <Link href="/login" className="text-blue-500 bg-white hover:bg-blue-100 font-bold py-2 px-4 rounded mr-2 shadow">Login</Link>

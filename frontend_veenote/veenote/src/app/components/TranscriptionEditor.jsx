@@ -3,9 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { Input, Button, notification } from 'antd';
 
-const TranscriptionEditor = ({ transcriptionText, onSave }) => {
+const TranscriptionEditor = ({ transcriptionText, fileName, onSave }) => {
   const [text, setText] = useState(transcriptionText || '');
-  const [filename, setFilename] = useState('');
+  const [filename, setFilename] = useState(fileName || '');
   const [error, setError] = useState('');
   
   const isSaveDisabled = !text || !text.trim();
@@ -20,6 +20,10 @@ const TranscriptionEditor = ({ transcriptionText, onSave }) => {
   //     setError('Transcription text is undefined.');
   //   }
   // }, [transcriptionText]);
+  useEffect(() => {
+    setText(transcriptionText);
+    setFilename(fileName);
+  }, [transcriptionText, fileName]);
 
   const handleSave = () => {
     if (!text.trim()) {
@@ -50,7 +54,23 @@ const TranscriptionEditor = ({ transcriptionText, onSave }) => {
           rows={15}
           value={text}
           onChange={(e) => setText(e.target.value)}
-          style={{ fontSize: '16px' }}
+          style={{
+            fontSize: '16px',
+            border: '1px solid #d9d9d9',
+            borderRadius: '8px',
+            padding: '10px',
+            boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
+            transition: 'border-color 0.3s, box-shadow 0.3s',
+          }}
+          placeholder="Enter your transcription here..."
+          onFocus={(e) => {
+            e.target.style.borderColor = '#40a9ff';
+            e.target.style.boxShadow = '0 0 0 2px rgba(24, 144, 255, 0.2)';
+          }}
+          onBlur={(e) => {
+            e.target.style.borderColor = '#d9d9d9';
+            e.target.style.boxShadow = '0 2px 6px rgba(0, 0, 0, 0.1)';
+          }}
         />
       </div>
       <div className="mb-5">
