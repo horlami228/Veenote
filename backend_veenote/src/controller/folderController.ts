@@ -71,9 +71,9 @@ export const getRootFolder = async (req: Request, res: Response) => {
     // use the 'find' method on the Folder model to find a root folder by the user_id
     // This returns a promise
 
-    const user_id: string | number = req.params.userName;
+    const userId = (req as Request & { user: any }).user.id;
 
-    Folder.find({"userId": user_id, "isRoot": true})
+    Folder.find({"userId": userId, "isRoot": true})
     .then(folder => {
         if (folder.length === 0) {
             return res.status(404).json({
@@ -95,58 +95,6 @@ export const getRootFolder = async (req: Request, res: Response) => {
     });
 };
 
-export const getNotesForFolder = async (req: Request, res: Response) => {
-    // Get all Notes for a folder
-    const folderId = req.params.folderId; // retreive folderId from request
-    let objFolderId: mongoose.Types.ObjectId;
-    try {
-        objFolderId = new objectId(folderId); // convert folderId to objectId
-    } 
-    catch (error) {
-        return res.status(400).json({message: "Invalid folderId"});
-    }
-   
-    //get all notes to a folder
-    getModelBy(Note, 'folderId', objFolderId)
-    .then((notes) => {
-        if (notes.length === 0) {
-            return res.status(400).json({message: "Folder is empty"});
-        }
-        
-        const filteredNotes: filterdNotes[] = notes.map((note: any) => ({
-            fileName: note.fileName,
-            id: note._id,
-            content: note.content,
-            createdAt: note.createdAt,
-            updatedAt: note.updatedAt
-        }));
-        (getModelBy(Folder, '_id', objFolderId))
-        .then((folder: any) => {
-            if (folder.length === 0) {
-                return res.status(404).json({message: "Folder not found"});
-            }
-
-        // return all notes in that folder
-            res.status(200).json({
-                "folders": [
-                    {
-                        "folderId": folder[0]._id,
-                        "folderName": folder[0].folderName,
-                        "notes": filteredNotes
-                    }
-                ]
-            });
-        });
-    })
-    .catch(error => {
-        if (error instanceof Error) {
-            // error with the query
-            res.status(500).json({
-                message: error.message
-            });
-        }
-    });     
-};
 
 // get all folders for a user
 export const getAllFolders = async (req: Request, res: Response) =>  {
@@ -243,5 +191,64 @@ export const updateFolder = async (req: Request, res: Response) => {
             message: "Error updating folder",
             details: error.message
         });
+    });
+};
+
+// all notes to a folder
+export const getNotesForFolder = async (req: Request, res: Response) => {
+    // Get all Notes for a folder
+    const folderName = req.params.folderName; // retreive folderId from request
+    
+    if (!folderName) {
+        return res.status(400).json({message: "Invalid folderName"});
+    }
+
+    Folder.findOne({ folderName: folderName })
+    .then((folder) => {
+        if (folder) {
+            Note.find({ folderId: folder._id })
+            .sort({ updatedAt: -1 })
+            .then((note) => {
+                if (note.length === 0) {
+                    return res.status(400).json({message: "Folder is empty"});
+                }
+                
+                const filteredNotes: filterdNotes[] = note.map((note: any) => ({
+                    fileName: note.fileName,
+                    id: note._id,
+                    content: note.content,
+                    createdAt: note.createdAt,
+                    updatedAt: note.updatedAt
+                }));
+                
+                // return all notes in that folder
+                res.status(200).json({
+                    "folder": {
+                        "folderId": folder._id,
+                        "folderName": folder.folderName,
+                        "isRoot": folder.isRoot,
+                        "notes": filteredNotes,
+                    }
+                });
+            })
+            .catch(error => {
+                if (error instanceof Error) {
+                    // error with the query
+                    res.status(500).json({
+                        message: error.message
+                    });
+                }
+            });
+        } else {
+            return res.status(404).json({message: "Folder not found"});
+        }
+    })
+    .catch(error => {
+        if (error instanceof Error) {
+            // error with the query
+            res.status(500).json({
+                message: error.message
+            });
+        }
     });
 };

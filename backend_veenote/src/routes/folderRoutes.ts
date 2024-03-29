@@ -25,7 +25,7 @@ router.get('/user/folder/rootfolder', getRootFolder);
  * Route for getting notes in a folder
 * GET /user/folder/<folderId>/notes
  */
-router.get('/user/folder/:folderId/notes', authMiddleware, getNotesForFolder);
+router.get('/user/folder/notes/:folderName', authMiddleware, getNotesForFolder);
 
 /**
  * Route for getting all folders
@@ -41,7 +41,7 @@ router.get('/user/folder/getAll', authMiddleware, getAllFolders);
  * The actual logic for user creation is encapsulated in the getFolder function within the folderController.
  */
 
-router.get('/user/folder/get/:folderId', authMiddleware, getFolder);
+router.get('/user/folder/get/:folderName', authMiddleware, getFolder);
 
 /**
  * Route for updating a folder
@@ -49,7 +49,7 @@ router.get('/user/folder/get/:folderId', authMiddleware, getFolder);
  * The actual logic for user creation is encapsulated in the updateFolder function within the folderController.
  */
 
-router.put('/user/folder/update/:folderId', authMiddleware, updateFolder);
+router.put('/user/folder/update/:folderName', authMiddleware, updateFolder);
 
 /**
  * Route for deleting a folder
@@ -57,7 +57,7 @@ router.put('/user/folder/update/:folderId', authMiddleware, updateFolder);
  * The actual logic for user creation is encapsulated in the deleteFolder function within the folderController.
  */
 
-router.delete('/user/folder/delete/:folderId', authMiddleware, deleteFolder);
+router.delete('/user/folder/delete/:folderName', authMiddleware, deleteFolder);
 
 
 export default router;
