@@ -78,32 +78,107 @@ export const createNote = async (req: Request, res: Response) => {
       }
     }
 };
-  
 
-export const getAllNotes = (req: Request, res: Response) => {
-    // use the 'find' method on the Folder model to find a root folder by the user_id
-    // This returns a promise
 
-    const user_id: string | number = req.params.userName;
+// controller to delete a note
+export const deleteNote = async (req: Request, res: Response) => {
+  // get the node id from the request parameters
+  const noteId = req.params.id;
 
-    Folder.find({"userId": user_id, "isRoot": true})
-    .then(folder => {
-        if (folder.length === 0) {
-            return res.status(404).json({
-                "Error": "Folder Not Found"
-            });
-        }
-        
-        // if the query is succesfull, send a 200 OK response with the root folder
-
-        res.status(200).json(folder);
-    })
-    .catch(error => {
-        // if there is an error during query, respons with a 500 Internal Server Error
-
-        res.status(500).json({
-            "Error": "Getting Folder",
-            "Details": error.message
+  // find the note by email and delete it
+  Note.findOneAndDelete({ _id: noteId })
+    .then((note) => {
+      if (!note) {
+        return res.status(404).json({
+          message: "Note not found",
         });
+      }
+      // if the note is successfully deleted, send a 200 OK response
+      res.status(200).json({
+        message: "Note deleted successfully",
+      });
+    })
+    .catch((error) => {
+      // if there is an error during query, respond with a 500 Internal Server Error
+      res.status(500).json({
+        message: "Error deleting note",
+        details: error.message,
+      });
+    });
+};
+
+// controller for updating a note
+export const updateNote = async (req: Request, res: Response) => {
+  // get the note id from the request parameters
+  const noteId = req.params.id;
+  Note.findOneAndUpdate({ _id: noteId}, req.body)
+    .then((note) => {
+      if (!note) {
+        return res.status(404).json({
+          message: "Note not found",
+        });
+      }
+      // if the note is successfully updated, send a 200 OK response
+      res.status(200).json({
+        message: "Note updated successfully",
+      });
+    })
+    .catch((error) => {
+      // if there is an error during query, respond with a 500 Internal Server Error
+      res.status(500).json({
+        message: "Error updating note",
+        details: error.message,
+      });
+    });
+};
+
+// controller to get all notes
+export const getAllNotes = async (req: Request, res: Response) =>  {
+  // get the user id from the request object
+  const userId = (req as Request & { user: any }).user.id;
+
+  // find all notes for the user
+  Note.find({ userId: userId })
+    .then((notes) => {
+      // if notes are found, send a 200 OK response with the notes
+      res.status(200).json({
+        message: "Notes retrieved successfully",
+        data: notes,
+      });
+    })
+    .catch((error) => {
+      // if there is an error during query, respond with a 500 Internal Server Error
+      res.status(500).json({
+        message: "Error retrieving notes",
+        details: error.message,
+      });
+    });
+};
+
+// controller to get a single note
+export const getNote = async (req: Request, res: Response) => {
+  // get the note id from the request parameters
+  const noteId = req.params.id;
+
+  // find the note by id
+  Note.findOne({ _id: noteId })
+    .then((note) => {
+      if (!note) {
+        return res.status(404).json({
+          message: "Note not found",
+        });
+      }
+      // if the note is found, send a 200 OK response with the note
+      res.status(200).json({
+        message: "Note retrieved successfully",
+        data: note,
+      });
+    })
+    .catch((error) => {
+      // if there is an error during query, respond with a 500 Internal Server Error
+      res.status(500).json({
+        message: "Error retrieving note",
+        details: error.message,
+      });
     });
 };
