@@ -11,7 +11,7 @@ interface Vfolder extends Document {
 }
 
 const folderSchema: Schema = new Schema<Vfolder>({
-    folderName: {type: String, required: true},
+    folderName: {type: String, required: true, unique: true},
     userId: {type: Schema.Types.ObjectId, ref: "User"},
     isRoot: {type: Boolean},
     createdAt: {type: Date, default: Date.now()},

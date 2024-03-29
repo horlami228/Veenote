@@ -28,11 +28,12 @@ export const createFolder = async  (req: Request, res: Response) => {
             // Responds with a 400 Bad Request error if the 'folderNmae' field is missing in the request body.
             return res.status(400).json({"Error": "Missing folder name"});
         }
+        const userId = (req as Request & { user: any }).user.id;
         // Extracts the data from the request body.
         const folderData = {
             folderName: req.body.folderName,
             is_root: false,
-            userId: ""
+            userId: userId
         };
         
         // Initializes a new instance of the User model with the extracted data.
@@ -47,6 +48,14 @@ export const createFolder = async  (req: Request, res: Response) => {
     } catch(error) {
         // Catches any errors that occur during the execution of the try block.
         if (error instanceof Error) {
+            if (error.message.includes("E11000")) {
+                // Responds with a 409 Conflict status if the folder name already exists.
+                res.status(409).json({
+                    "Error": "Folder Already Exists",
+                    "Details": error.message
+                });
+            }
+            
             // Responds with a 500 Internal Server Error status and the error details if an exception occurs.
             res.status(500).json({
                 "Error": "Error Creating A Folder",
@@ -137,4 +146,99 @@ export const getNotesForFolder = async (req: Request, res: Response) => {
             });
         }
     });     
+};
+
+// get all folders for a user
+export const getAllFolders = async (req: Request, res: Response) =>  {
+    // get the user id from the request object
+    const userId = (req as Request & { user: any }).user._id
+
+    // find all folders for the user
+    Folder.find({ userId: userId })
+    .then((folders) => {
+        // if folders are found, send a 200 OK response with the folders
+        res.status(200).json({
+            message: "Folders retrieved successfully",
+            data: folders
+        });
+    })
+    .catch((error) => {
+        // if there is an error during query, respond with a 500 Internal Server Error
+        res.status(500).json({
+            message: "Error retrieving folders",
+            details: error.message
+        });
+    });
+};
+
+// get a single folder by folderName
+export const getFolder = async (req: Request, res: Response) => {
+    // get the folder name from the request parameters
+    const folderName = req.params.folderName;
+
+    // find the folder by folderName
+    Folder.findOne({ folderName: folderName })
+    .then((folder) => {
+        if (!folder) {
+            return res.status(404).json({
+                message: "Folder not found"
+            });
+        }
+        // if the folder is found, send a 200 OK response with the folder
+        res.status(200).json({
+            message: "Folder retrieved successfully",
+            data: folder
+        });
+    })
+    .catch((error) => {
+        // if there is an error during query, respond with a 500 Internal Server Error
+        res.status(500).json({
+            message: "Error retrieving folder",
+            details: error.message
+        });
+    });
+};
+
+// delete a folder by folderName
+export const deleteFolder = async (req: Request, res: Response) => {
+    const folderId = req.params.folderId;
+
+    Folder.findOneAndDelete({ _id: folderId })
+    .then((folder) => {
+        // if successful, send a 200 OK with the deleted data
+        res.status(200).json({ deleted: folder });
+    })
+    .catch((error) => {
+        // if error occurred, respond with 500 Internal Server Error and print out error
+        // error message is included in the response
+        res.status(500).json({
+            message: "Error deleting folder",
+            details: error.message
+        });
+    });
+};
+
+// update a folder by folderName
+export const updateFolder = async (req: Request, res: Response) => {
+    const folderName = req.params.folderName;
+    const folderData = req.body;
+
+    Folder.findOneAndUpdate({ folderName: folderName }, folderData)
+    .then((folder) => {
+        if (!folder) {
+            return res.status(404).json({
+                message: "Folder not found"
+            });
+        }
+        // if successful, send a 200 OK with the updated data
+        res.status(200).json({ updated: folder });
+    })
+    .catch((error) => {
+        // if error occurred, respond with 500 Internal Server Error and print out error
+        // error message is included in the response
+        res.status(500).json({
+            message: "Error updating folder",
+            details: error.message
+        });
+    });
 };

@@ -63,7 +63,7 @@ export const createUser = async  (req: Request, res: Response) => {
         if (error instanceof Error) {
 
             if ((error as any).code === 11000) {
-                return res.status(400).json({
+                return res.status(409).json({
                   errorCode: 'UserExists',
                   errorMessage: "User with the provided email or username already exists",
                   errorDetails: "A user with the same email or username already exists in the database. Please use a unique email or username."

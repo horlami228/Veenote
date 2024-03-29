@@ -66,7 +66,7 @@ export const createNote = async (req: Request, res: Response) => {
       if (error instanceof Error) {
         // Checking if the error is a MongoDB duplicate key error
         if ((error as any).code === 11000) {
-          return res.status(400).json({
+          return res.status(409).json({
             errorCode: 'DuplicateFileName',
             errorMessage: "Note with the provided fileName already exists",
             errorDetails: "A note with the same fileName already exists in the database. Please use a unique fileName."
