@@ -151,3 +151,5 @@ test.ts
 config.ts
 
 .env
+
+uploads

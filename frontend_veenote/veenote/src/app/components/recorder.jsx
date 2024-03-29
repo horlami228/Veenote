@@ -2,15 +2,14 @@
 
 import { useRef, useState, useEffect} from 'react';
 import { MicrophoneIcon, StopIcon } from '@heroicons/react/24/outline';
-import { notification } from 'antd';
+import { notification, Spin } from 'antd';
 import Link from 'next/link';
-import TranscriptionEditor from './TranscriptionEditor';
 import { useAuth } from './AuthContext';
 import axios from 'axios';
 import LogoutButton from './LogoutComponent';
 import {useRouter} from 'next/navigation';
 
-function VoiceRecorder() {
+function VoiceRecorder({onTranscriptionComplete}) {
   const [isRecording, setIsRecording] = useState(false);
   const [audioChunks, setAudioChunks] = useState([]);
   const mediaRecorderRef = useRef(null);
@@ -18,6 +17,7 @@ function VoiceRecorder() {
   const [duration, setDuration] = useState(0);
   const audioChunksRef = useRef([]); // Use a ref to persist audio chunks
   const [transcriptionText, setTranscriptionText] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const { state } = useAuth();
   const router = useRouter();
@@ -36,49 +36,76 @@ function VoiceRecorder() {
     }
   };
 
-  const handleStop = () => {
+  const handleStop = async () => {
     console.log('Recording stopped.');
-    if (audioChunksRef.current.length > 0) {
-      const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
-      console.log(`Final audio blob size: ${audioBlob.size}`);
-      if (audioBlob.size > 0) {
-        const formData = new FormData();
-        formData.append('audio', audioBlob, 'recording.wav');
   
-        // Replace 'YOUR_BACKEND_ENDPOINT' with your actual endpoint URL
-        axios.post('http://localhost:8000/api/v1/aws/upload', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-          withCredentials: true,
-        })
-        .then((response) => {
-          console.log('Success:', response.data);
-          console.log('s3Uri', response.data.s3Uri);
-          notification.success({
-            message: 'Recording Uploaded',
-            description: 'Your recording has been uploaded successfully.'
-          })
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-          notification.error({
-            message: 'Upload Error',
-            description: 'Failed to upload the recording. Please try again.'
-          });
-        });
-      } else {
-        console.log('No audio data was captured.');
-        notification.error({
-          message: 'Recording Error',
-          description: 'No audio data was captured. Please try again.'
-        });
-      }
-    } else {
+    if (audioChunksRef.current.length === 0) {
       console.log('No audio chunks were captured.');
+      return;
     }
-    audioChunksRef.current = [];
+  
+    const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+    console.log(`Final audio blob size: ${audioBlob.size}`);
+  
+    if (audioBlob.size === 0) {
+      console.log('No audio data was captured.');
+      notification.error({
+        message: 'Recording Error',
+        description: 'No audio data was captured. Please try again.'
+      });
+      return;
+    }
+  
+    try {
+        // active loading spinner
+        setIsLoading(true);
+
+      const formData = new FormData();
+      formData.append('audio', audioBlob, 'recording.wav');
+  
+      // Replace 'YOUR_BACKEND_ENDPOINT' with your actual endpoint URL
+      const response = await axios.post('http://localhost:8000/api/v1/aws/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        withCredentials: true,
+      });
+  
+      console.log('Success:', response.data);
+      console.log('s3Uri', response.data.s3Uri);
+
+      // make transcription request
+      const transcriptionResponse = await axios.post('http://localhost:8000/api/v1/aws/transcribe',  {
+        mediaFileUri: response.data.s3Uri,
+      }, {
+        withCredentials: true,
+      });
+
+      // deactivate loading spinner
+      setIsLoading(false);
+      console.log('Transcription:', transcriptionResponse.data.fullTranscript);
+      
+      // When transcription is complete or updated
+      onTranscriptionComplete(transcriptionResponse.data.fullTranscript);
+
+      notification.success({
+        message: 'Upload Success',
+        description: 'Recording uploaded successfully.'
+      });
+    } catch (error) {
+      // deactivate loading spinner
+      setIsLoading(false);
+      console.error('Error:', error);
+      notification.error({
+        message: 'Upload Error',
+        description: 'Failed to upload the recording. Please try again.'
+      });
+    } finally {
+      // Clear the audio chunks after processing
+      audioChunksRef.current = [];
+    }
   };
+  
 
   const startRecording = () => {
     if (!isRecording) {
@@ -164,8 +191,11 @@ function VoiceRecorder() {
 
       {console.log('State:', state)}
       {error && <div className="text-red-500 text-center">{error}</div>}
-
+     
+        
       <div className="text-center mt-20 ">
+      {/* <Spin spinning={isLoading} size='large'> */}
+      <>
         <p className="text-2xl mb-4 text-white">{formatDuration(duration)}</p>
         <button
           onClick={isRecording ? stopRecording : startRecording}
@@ -173,7 +203,12 @@ function VoiceRecorder() {
         >
           {isRecording ? <StopIcon className="h-10 w-10" /> : <MicrophoneIcon className="h-10 w-10" />}
         </button>
+        <Spin spinning={isLoading} size='large'>
+        </Spin>
+      </>
+      {/* </Spin> */}
       </div>
+      
     </div>
   );
   

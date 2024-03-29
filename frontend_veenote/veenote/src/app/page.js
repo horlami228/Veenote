@@ -8,6 +8,7 @@ import TranscriptionEditor from './components/TranscriptionEditor';
 import axios from 'axios';
 import { notification } from 'antd';
 import './globals.css';
+import { useRouter } from 'next/navigation';
 
 export default function Page() {
   const userNotes = Array.from({ length: 120 }, (v, i) => ({
@@ -20,6 +21,7 @@ export default function Page() {
   const [transcriptionText, setTranscriptionText] = useState('');
   const [error, setError] = useState('');
   const [currentNote, setCurrentNote] = useState({ content: '', title: '' });
+  const router = useRouter();
 
   
   // useEffect(() => {
@@ -80,11 +82,6 @@ export default function Page() {
           description: 'You are not authorized to save transcriptions. Please login.'
         });
         router.push('/login');
-      } else if (error.response && error.response.status === 403) {
-        notification.error({
-          message: 'Save Error',
-          description: 'Failed to save transcription. Please try again.'
-        });
       } else if (error.response && error.response.status === 400) {
         if (error.response.data.errorCode === 'DuplicateFileName') {
           setError('Filename already exists. Please choose a different filename.');
@@ -95,10 +92,12 @@ export default function Page() {
           setError('An error occurred. Please check your input and try again.');
         }
       }
-      notification.error({
-        message: 'Save Error',
-        description: 'Failed to save transcription. Please try again.'
-      });
+      else {
+        notification.error({
+          message: 'Save Error',
+          description: 'Failed to save transcription. Please try again.'
+        });
+      }
     });
   };
 
@@ -140,13 +139,17 @@ export default function Page() {
     //     console.error('Error updating note:', error);
     //   });
   };
+
+  const handleTranscription = (newTranscription) => {
+    setTranscriptionText(newTranscription);
+  };
   
   return (
     <AuthProvider>
       <div className="flex flex-col justify-center min-h-screen bg-gray-600 p-5">
-        <VoiceRecorder />
+        <VoiceRecorder onTranscriptionComplete={handleTranscription} />
         <div className="w-full max-w-3xl mx-auto mb-5 justify-center">
-          <TranscriptionEditor transcriptionText={currentNote.content} fileName={currentNote.title} onSave={handleTranscriptionSave}/>
+          <TranscriptionEditor transcriptionText={transcriptionText || currentNote.content} fileName={currentNote.title} onSave={handleTranscriptionSave}/>
           {error && <div className="text-red-500 text-center">{error}</div>}
         </div>
         <SidebarComponent username={'ola'} notes={userNotes} onNoteSelect={handleNoteSelect} onDelete={handleDeleteNote} onRename={handleRenameNote}/>
