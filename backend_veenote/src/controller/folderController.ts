@@ -230,6 +230,9 @@ export const updateFolder = async (req: Request, res: Response) => {
                 message: "Folder not found"
             });
         }
+        // update the updatedAt field
+        folder.updatedAt = new Date();
+        folder.save();
         // if successful, send a 200 OK with the updated data
         res.status(200).json({ updated: folder });
     })

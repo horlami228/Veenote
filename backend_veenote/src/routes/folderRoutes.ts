@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { createFolder, getRootFolder, getNotesForFolder } from '../controller/folderController.js';
+import { createFolder, getRootFolder, getNotesForFolder, getAllFolders, getFolder, deleteFolder, updateFolder }
+ from '../controller/folderController.js';
 import { authMiddleware } from "../controller/auth/authController.js";
 
 // Create a new router instance
@@ -25,5 +26,38 @@ router.get('/user/folder/rootfolder', getRootFolder);
 * GET /user/folder/<folderId>/notes
  */
 router.get('/user/folder/:folderId/notes', authMiddleware, getNotesForFolder);
+
+/**
+ * Route for getting all folders
+ * GET /user/folder/getAll
+ * The actual logic for user creation is encapsulated in the getAllFolders function within the folderController.
+ */
+
+router.get('/user/folder/getAll', authMiddleware, getAllFolders);
+
+/**
+ * Route for getting a folder
+ * GET /user/folder/get/:folderId
+ * The actual logic for user creation is encapsulated in the getFolder function within the folderController.
+ */
+
+router.get('/user/folder/get/:folderId', authMiddleware, getFolder);
+
+/**
+ * Route for updating a folder
+ * PUT /user/folder/update/:folderId
+ * The actual logic for user creation is encapsulated in the updateFolder function within the folderController.
+ */
+
+router.put('/user/folder/update/:folderId', authMiddleware, updateFolder);
+
+/**
+ * Route for deleting a folder
+ * DELETE /user/folder/delete/:folderId
+ * The actual logic for user creation is encapsulated in the deleteFolder function within the folderController.
+ */
+
+router.delete('/user/folder/delete/:folderId', authMiddleware, deleteFolder);
+
 
 export default router;

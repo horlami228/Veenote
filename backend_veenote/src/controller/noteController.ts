@@ -118,6 +118,11 @@ export const updateNote = async (req: Request, res: Response) => {
           message: "Note not found",
         });
       }
+
+      // update the updatedAt field
+      note.updatedAt = new Date();
+      note.save();
+      
       // if the note is successfully updated, send a 200 OK response
       res.status(200).json({
         message: "Note updated successfully",

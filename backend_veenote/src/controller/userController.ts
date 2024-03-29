@@ -154,5 +154,32 @@ export const deleteUser = (req: Request, res: Response) => {
     });
 };
 
+export const updateUser = (req: Request, res: Response) => {
+    
+    const userId = (req as Request & { user: any }).user._id;
 
+    User.findOneAndUpdate({ _id: userId }, req.body)
+    .then(user => {
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found",
+            });
+        }
 
+        // update the updatedAt field
+        user.updatedAt = new Date();
+        user.save();
+        
+        // if the user is successfully updated, send a 200 OK response
+        res.status(200).json({
+            message: "User updated successfully",
+        });
+    })
+    .catch(error => {
+        // if there is an error during query, respond with a 500 Internal Server Error
+        res.status(500).json({
+            message: "Error updating user",
+            details: error.message,
+        });
+    });
+};

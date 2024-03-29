@@ -20,7 +20,7 @@ router.post('/user/create/note/new', authMiddleware, createNote);
  * The actual logic for user creation is encapsulated in the deleteNote function within the noteController.
  */
 
-router.delete('/user/delete/note/:noteId', authMiddleware, deleteNote);
+router.delete('/user/note/delete/:noteId', authMiddleware, deleteNote);
 
 /**
  * Route for updating a note
@@ -28,7 +28,7 @@ router.delete('/user/delete/note/:noteId', authMiddleware, deleteNote);
  * The actual logic for user creation is encapsulated in the updateNote function within the noteController.
  */
 
-router.put('/user/update/note/:noteId', authMiddleware, updateNote);
+router.put('/user/note/update/:noteId', authMiddleware, updateNote);
 
 /**
  * Route for getting a note
@@ -36,13 +36,13 @@ router.put('/user/update/note/:noteId', authMiddleware, updateNote);
  * The actual logic for user creation is encapsulated in the getNote function within the noteController.
  */
 
-router.get('/user/get/note/:noteId', authMiddleware, getNote);
+router.get('/user/note/:noteId', authMiddleware, getNote);
 
 /**
  * Route for getting all notes
  * GET /user/get/notes
  * The actual logic for user creation is encapsulated in the getAllNotes function within the noteController.
  */
-router.get('/user/get/notes', authMiddleware, getAllNotes);
+router.get('/user/notes/get', authMiddleware, getAllNotes);
 
 export default router;
