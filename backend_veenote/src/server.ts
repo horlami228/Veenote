@@ -10,6 +10,9 @@ import swaggerSpec from './swaggerConfig.js';
 import swaggerUi from 'swagger-ui-express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import http from 'http';
+import initializeWebSocketServer from './wbSocket/webSocketServer.js';
+
 
 // Initialize Express app
 const app = express();
@@ -17,11 +20,18 @@ const app = express();
 // Set default port or use provided PORT environment variable
 const PORT = process.env.PORT || 8000;
 
+// create a server object:
+const server = http.createServer(app);
+
+// Initialize the WebSocket server
+initializeWebSocketServer(server);
+
 // Enable CORS
 app.use(cors({
     origin: 'http://localhost:3000',
     credentials: true
 }));
+
 
 // Enable cookie parser
 app.use(cookieParser());
@@ -63,6 +73,6 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 
 // Start the server
 // Listens for requests on the specified PORT
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Server is now listening on port ${PORT}`);
 });
