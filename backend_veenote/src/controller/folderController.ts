@@ -99,7 +99,7 @@ export const getRootFolder = async (req: Request, res: Response) => {
 // get all folders for a user
 export const getAllFolders = async (req: Request, res: Response) =>  {
     // get the user id from the request object
-    const userId = (req as Request & { user: any }).user._id
+    const userId = (req as Request & { user: any }).user.id;
 
     // find all folders for the user
     Folder.find({ userId: userId })
@@ -197,20 +197,20 @@ export const updateFolder = async (req: Request, res: Response) => {
 // all notes to a folder
 export const getNotesForFolder = async (req: Request, res: Response) => {
     // Get all Notes for a folder
-    const folderName = req.params.folderName; // retreive folderId from request
+    const folderId = req.params.folderId; // retreive folderId from request
     
-    if (!folderName) {
-        return res.status(400).json({message: "Invalid folderName"});
+    if (!folderId) {
+        return res.status(400).json({message: "Invalid folderId"});
     }
 
-    Folder.findOne({ folderName: folderName })
+    Folder.findOne({ _id: folderId })
     .then((folder) => {
         if (folder) {
             Note.find({ folderId: folder._id })
             .sort({ updatedAt: -1 })
             .then((note) => {
                 if (note.length === 0) {
-                    return res.status(400).json({message: "Folder is empty"});
+                    return res.status(200).json({message: "Folder is empty"});
                 }
                 
                 const filteredNotes: filterdNotes[] = note.map((note: any) => ({

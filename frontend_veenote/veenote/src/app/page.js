@@ -20,37 +20,53 @@ export default function Page() {
   const [notes, setNotes] = useState([]);
   const [transcriptionText, setTranscriptionText] = useState('');
   const [error, setError] = useState('');
+  const [folders, setFolder] = useState([]);
+  const [foldersName, setFoldersName] = useState([])
   const [currentNote, setCurrentNote] = useState({ content: '', title: '' });
   const router = useRouter();
 
-  
-  // useEffect(() => {
-  //   const fetchNotes = async () => {
-  //     try {
-  //       const response = await axios.get(`http:localhost:8000/api/v1/notes/`);
-  //       // Assuming the structure matches your backend response
-  //       if (response.data.folders && response.data.folders.length > 0) {
-  //         setNotes(response.data.folders[0].notes);
-  //       } else {
-  //         // Handle case where no notes are found or response structure is different
-  //         setNotes([]);
-  //       }
-  //     } catch (error) {
-  //       console.error('Failed to fetch notes:', error);
-  //       // Handle error, possibly update state to show an error message
-  //     }
-  //   };
-  
-  //   fetchNotes();
-  // }, []); // Refetch when folderId changes
+  const mockFolders = [
+    {
+      id: 1,
+      name: 'Work',
+    },
+    {
+      id: 2,
+      name: 'Personal',
+    },
+    {
+      id: 3,
+      name: 'Travel',
+    },
+    {
+      id: 4,
+      name: 'Archive',
+    }
+  ];
+  useEffect(() => {
+    console.log('fetching folders')
+    const fetchFolders = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/api/v1/user/folder/getAll', {
+          withCredentials: true,
+        });
+        console.log('response', response.data.data);
+        setFolder(response.data.data);
+      } catch (error) {
+        console.error('Error fetching folders:', error);
+        notification.error({
+          message: 'Error',
+          description: 'Failed to fetch folders. Please try again.'
+        })
+      }
+    };
 
-  // const handleNoteSelect = (note) => {
-  //   setSelectedNote({ content: note.content, filename: note.fileName });
-  // };
+    fetchFolders()
 
-  // const onTranscriptionComplete = (text) => {
-  //   setTranscriptionText(text);
-  // };
+    // setFolder(mockFolders);
+  }, []);
+
+
 
   const handleTranscriptionSave = (text, filename) => {
     setError('');  // Clear any previous errors
@@ -143,6 +159,11 @@ export default function Page() {
   const handleTranscription = (newTranscription) => {
     setTranscriptionText(newTranscription);
   };
+
+  const handleAddFolder = (newFolder) => {
+    setFolder([...folders, newFolder]);
+  };
+  
   
   return (
     <AuthProvider>
@@ -152,7 +173,13 @@ export default function Page() {
           <TranscriptionEditor transcriptionText={transcriptionText || currentNote.content} fileName={currentNote.title} onSave={handleTranscriptionSave}/>
           {error && <div className="text-red-500 text-center">{error}</div>}
         </div>
-        <SidebarComponent username={'ola'} notes={userNotes} onNoteSelect={handleNoteSelect} onDelete={handleDeleteNote} onRename={handleRenameNote}/>
+        <SidebarComponent username={'ola'} 
+        notes={userNotes} 
+        folders={folders} 
+        onNoteSelect={handleNoteSelect} 
+        onDelete={handleDeleteNote} 
+        onRename={handleRenameNote}
+        onAddFolder={handleAddFolder}/>
       </div>
     </AuthProvider>
   );

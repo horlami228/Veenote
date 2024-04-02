@@ -2,17 +2,23 @@ import {
   UserOutlined, FolderOpenOutlined, DownOutlined, RightOutlined,
   LeftOutlined, SettingOutlined, SearchOutlined, MenuOutlined, CloseOutlined,
 } from '@ant-design/icons';
-import { MoreOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import { Menu, Dropdown, Input, Modal } from 'antd';
+import { MoreOutlined, EditOutlined, DeleteOutlined, FolderAddOutlined } from '@ant-design/icons';
+import { Menu, Dropdown, Input, Modal, notification, Button } from 'antd';
 import { useState, useEffect } from 'react';
+import axios from 'axios';
 
-const SidebarComponent = ({ username, notes, onNoteSelect, onDelete, onRename }) => {
+const SidebarComponent = ({ username, notes, folders, onNoteSelect, onDelete, onRename, onAddFolder }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [isMobileSidebarVisible, setIsMobileSidebarVisible] = useState(false);
   const [isLargeScreen, setIsLargeScreen] = useState(false);
   const [isRenaming, setIsRenaming] = useState(null);  // To track which note is being renamed
   const [newName, setNewName] = useState('');  // To hold the new name being entered
+  const [folderNotes, setFolderNotes] = useState({});
+  const [isCreatingFolder, setIsCreatingFolder] = useState(false);
+  const [newFolderName, setNewFolderName] = useState('');
+  const [error, setError] = useState('');
+
 
 
   useEffect(() => {
@@ -31,9 +37,43 @@ const SidebarComponent = ({ username, notes, onNoteSelect, onDelete, onRename })
     return () => window.removeEventListener('resize', updateScreenSize);
   }, []);
 
-  const handleOpenChange = (flag) => {
-    setDropdownOpen(flag);
+  const handleOpenChange = async (flag, folderId) => {
+    // Expand or collapse the dropdown
+    setDropdownOpen(flag ? folderId : null);
+  
+    // Fetch notes if the folder is being opened and notes haven't been fetched yet
+    if (flag && !folderNotes[folderId]) {
+      console.log('Fetching notes for folder:', folderId);
+      try {
+        const response = await axios.get(`http://localhost:8000/api/v1/user/folder/notes/${folderId}`, {
+          withCredentials: true,
+        });
+        // Ensure that response.data and response.data.folder exist before accessing notes
+        if (response.data && response.data.folder && Array.isArray(response.data.folder.notes)) {
+          console.log('Available notes');
+          setFolderNotes({
+            ...folderNotes,
+            [folderId]: response.data.folder.notes // Safely assign notes to the state
+          });
+        } else {
+          // Handle the case where no notes are present or the structure is not as expected
+          console.log('No notes found or unexpected data structure');
+          setFolderNotes({
+            ...folderNotes,
+            [folderId]: [] // Assign an empty array if no notes are present
+          });
+        }
+        
+      } catch (error) {
+        console.error('Failed to fetch notes:', error);
+        notification.error({
+          message: 'Error',
+          description: 'Failed to fetch notes. Please try again.'
+        });
+      }
+    }
   };
+  
 
   const toggleMobileSidebar = () => {
     setIsMobileSidebarVisible(!isMobileSidebarVisible);
@@ -72,6 +112,34 @@ const SidebarComponent = ({ username, notes, onNoteSelect, onDelete, onRename })
       setNewName('');
     }
   };
+
+  const handleCreateFolder = async () => {
+    if (!newFolderName.trim()) return;
+  
+    try {
+      const response = await axios.post('http://localhost:8000/api/v1/user/folder/create', { folderName: newFolderName }, { withCredentials: true });
+      const createdFolder = response.data;
+      // setFolder([...folders, createdFolder]);  // Update the folders state
+      onAddFolder(createdFolder);  // Pass the new folder up to the parent component
+      setNewFolderName('');  // Reset the input field
+      setIsCreatingFolder(false);  // Hide the input field
+      notification.success({
+        message: 'Success',
+        description: 'Folder created successfully.'
+      });
+    } catch (error) {
+      console.error('Error creating folder:', error);
+      // work on the error
+      setError()
+      setIsCreatingFolder(false)
+      setNewFolderName('')
+      notification.error({
+        message: 'Error',
+        description: 'Failed to create the folder. Please try again.'
+      });
+    }
+  };
+  
   
     // Dropdown menu for user settings
     const userMenu = (
@@ -93,7 +161,7 @@ const SidebarComponent = ({ username, notes, onNoteSelect, onDelete, onRename })
         {notes.map((note, index) => (
           <Menu.Item key={note.id}>
             <div className="flex justify-between items-center">
-            {isRenaming === note.id ? (
+            {isRenaming === note._id ? (
               <Input
               value={newName}
               onChange={(e) => {
@@ -178,12 +246,54 @@ const SidebarComponent = ({ username, notes, onNoteSelect, onDelete, onRename })
                 <div className="px-4 flex flex-col items-center">
                   <span className="text-2xl font-medium mt-2">{username}</span>
                   <Input prefix={<SearchOutlined />} className="my-4" placeholder="Search notes" />
-                  <Dropdown overlay={notesMenu} trigger={['click']} onOpenChange={handleOpenChange} open={dropdownOpen} className="w-full">
-                    <a className="ant-dropdown-link cursor-pointer flex items-center justify-between text-lg">
-                      <FolderOpenOutlined className="mr-2" /> Root Folder {dropdownOpen ? <DownOutlined /> : <RightOutlined />}
-                    </a>
-                  </Dropdown>
-                </div>
+            {/* Folder creation area */}
+                  <div className="folder-creation-area">
+          {isCreatingFolder ? (
+            <Input
+              type="text"
+              placeholder="Enter folder name"
+              value={newFolderName}
+              onChange={(e) => setNewFolderName(e.target.value)}
+              onPressEnter={handleCreateFolder}
+              onBlur={handleCreateFolder}
+              autoFocus
+            />
+          ) : (
+            <Button icon={<FolderAddOutlined />} onClick={() => setIsCreatingFolder(true)}>Add Folder</Button>
+          )}
+        </div>
+        {/**Existing folder */}
+        {
+          Array.isArray(folders) && folders.map((folder) => (
+            <Dropdown
+              key={folder._id}
+              overlay={
+                <Menu>
+                  {
+                    (folderNotes[folder._id] && folderNotes[folder._id].length > 0) ?
+                    folderNotes[folder._id].map((note) => (
+                      <Menu.Item key={note._id} onClick={() => onNoteSelect(note)}>
+                        {note.content}
+                      </Menu.Item>
+                    )) :
+                    <Menu.Item disabled>No notes available</Menu.Item> // Display when no notes are available
+                  }
+                </Menu>
+              }
+              onOpenChange={(flag) => handleOpenChange(flag, folder._id)}
+              open={dropdownOpen === folder._id}
+              trigger={['click']}
+              className="mb-2" // Adding bottom margin to each Dropdown
+            >
+              <a className="ant-dropdown-link cursor-pointer flex items-center justify-between text-lg p-2" // Adding padding for better spacing
+                style={{ display: 'block', marginBottom: '10px' }}>
+                <FolderOpenOutlined className="mr-2" /> {folder.folderName} {dropdownOpen === folder._id ? <DownOutlined /> : <RightOutlined />}
+              </a>
+            </Dropdown>
+          ))
+        }
+
+              </div>
               </>
             )}
           </div>

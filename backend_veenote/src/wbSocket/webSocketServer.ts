@@ -1,10 +1,10 @@
 import webSocket, { WebSocket } from 'ws';
 import http from 'http';
-import { StartStreamTranscriptionCommand, TranscribeStreamingClient, TranscriptEvent as AWSTranscriptEvent } from "@aws-sdk/client-transcribe-streaming";
+import { StartStreamTranscriptionCommand } from "@aws-sdk/client-transcribe-streaming";
 import client from '../aws/streamingConfig.js';
 import ffmpeg from 'fluent-ffmpeg';
 import { Readable, PassThrough } from 'stream';
-import fs from 'fs';
+
 
 const initializeWebSocketServer = (server: http.Server): void => {
     const wss = new webSocket.Server({ server });
@@ -106,10 +106,10 @@ const initializeWebSocketServer = (server: http.Server): void => {
                                 }
                             }
 
-                            // Send the transcription to the client if it's not empty
-                            if (transcriptBuffer.trim().length > 0 && isAudioEnded) {
-                                sendFinalTranscript();
-                            }
+                            // // Send the transcription to the client if it's not empty
+                            // if (transcriptBuffer.trim().length > 0 && isAudioEnded) {
+                            //     sendFinalTranscript();
+                            // }
 
                         }
                     }

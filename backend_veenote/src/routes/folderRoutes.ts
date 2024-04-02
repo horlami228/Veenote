@@ -25,7 +25,7 @@ router.get('/user/folder/rootfolder', getRootFolder);
  * Route for getting notes in a folder
 * GET /user/folder/<folderId>/notes
  */
-router.get('/user/folder/notes/:folderName', authMiddleware, getNotesForFolder);
+router.get('/user/folder/notes/:folderId', authMiddleware, getNotesForFolder);
 
 /**
  * Route for getting all folders

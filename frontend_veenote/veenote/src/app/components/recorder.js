@@ -181,7 +181,7 @@ function VoiceRecorder({onTranscriptionComplete}) {
                   console.log('Recording stopped.');
                 }
 
-                mediaRecorderRef.current.start(250); // Start recording with a time slice of 1 second
+                mediaRecorderRef.current.start(100); // Start recording with a time slice of 1 second
                 setIsRecording(true);
                 console.log('MediaRecorder started with MIME type:', options.mimeType);
                 setDuration(0);

@@ -47,7 +47,7 @@ export const createUser = async  (req: Request, res: Response) => {
 
         // Create the root folder for the user
         const folderData = {
-            folderName: "ROOT FOLDER",
+            folderName: `${user.userName} Root Folder`,
             isRoot: true,
             userId: user.id
         };
@@ -66,7 +66,8 @@ export const createUser = async  (req: Request, res: Response) => {
                 return res.status(409).json({
                   errorCode: 'UserExists',
                   errorMessage: "User with the provided email or username already exists",
-                  errorDetails: "A user with the same email or username already exists in the database. Please use a unique email or username."
+                  errorDetails: "A user with the same email or username already exists in the database. Please use a unique email or username.",
+                  error: error.message
               });
             }
             // Responds with a 500 Internal Server Error status and the error details if an exception occurs.
