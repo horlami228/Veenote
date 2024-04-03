@@ -11,11 +11,11 @@ interface Vfolder extends Document {
 }
 
 const folderSchema: Schema = new Schema<Vfolder>({
-    folderName: {type: String, required: true, unique: true},
-    userId: {type: Schema.Types.ObjectId, ref: "User"},
-    isRoot: {type: Boolean},
-    createdAt: {type: Date, default: Date.now()},
-    updatedAt: {type: Date, default: Date.now()}
+    folderName: { type: String, required: true, unique: true },
+    userId: { type: Schema.Types.ObjectId, ref: "User" },
+    isRoot: { type: Boolean }
+}, {
+    timestamps: true // This adds createdAt and updatedAt fields automatically
 });
 
 const Folder: Model<Vfolder> = mongoose.model<Vfolder>("Folder", folderSchema, "folders_collection");

@@ -24,11 +24,22 @@ export const createNote = async (req: Request, res: Response) => {
           errorCode: 'MissingContent',
           errorMessage: "content is a required field",
           errorDetails: "The 'content' field is not present in the request body."
-      });
+        });
+      }
+
+       // Get the folderId from the request params
+       const folderId = req.params.folderId;
+       if (!folderId) {
+        return res.status(400).json({
+          errorCode: 'MissingFolderId',
+          errorMessage: "folderId is a required field",
+          errorDetails: "The 'folderId' field is not present in the request body."
+        });
       }
   
       // Set default filename if missing
       const fileName = req.body.fileName || `default-${getFormattedDateTime()}`;
+
       
       // Get the user from the request object
       const me = (req as Request & { user: any }).user;
@@ -41,19 +52,19 @@ export const createNote = async (req: Request, res: Response) => {
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Find the associated folder
-      const folder = await Folder.findOne({ userId: user._id, isRoot: true});
+      // // Find the associated folder
+      // const folder = await Folder.findOne({ userId: user._id, isRoot: true});
 
-      if (!folder) {
-        return res.status(404).json({ message: "Root folder not found" });
-      }
+      // if (!folder) {
+      //   return res.status(404).json({ message: "Root folder not found" });
+      // }
 
       // Create the note data object
       const noteData = {
         fileName: fileName,
         content: req.body.content,
         userId: user._id,
-        folderId: folder._id
+        folderId: folderId
       };
   
       // Save the note
@@ -83,7 +94,7 @@ export const createNote = async (req: Request, res: Response) => {
 // controller to delete a note
 export const deleteNote = async (req: Request, res: Response) => {
   // get the node id from the request parameters
-  const noteId = req.params.id;
+  const noteId = req.params.noteId;
 
   // find the note by email and delete it
   Note.findOneAndDelete({ _id: noteId })
@@ -110,17 +121,15 @@ export const deleteNote = async (req: Request, res: Response) => {
 // controller for updating a note
 export const updateNote = async (req: Request, res: Response) => {
   // get the note id from the request parameters
-  const noteId = req.params.id;
-  Note.findOneAndUpdate({ _id: noteId}, req.body)
+  const noteId = req.params.noteId;
+  Note.findOneAndUpdate({ _id: noteId}, req.body, { new: true })
     .then((note) => {
       if (!note) {
         return res.status(404).json({
           message: "Note not found",
         });
       }
-
-      // update the updatedAt field
-      note.updatedAt = new Date();
+      
       note.save();
       
       // if the note is successfully updated, send a 200 OK response

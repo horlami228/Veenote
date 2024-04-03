@@ -8,7 +8,9 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import NoteItem from './NoteItem';
 
-const SidebarComponent = ({ username, notes, folders, onNoteSelect, onDelete, onRename, onAddFolder }) => {
+
+// Sidebar component
+const SidebarComponent = ({ username, folders, onNoteSelect, onDelete, onRename, onAddFolder }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [isMobileSidebarVisible, setIsMobileSidebarVisible] = useState(false);
@@ -39,16 +41,18 @@ const SidebarComponent = ({ username, notes, folders, onNoteSelect, onDelete, on
   }, []);
 
   const handleOpenChange = async (flag, folderId) => {
+    console.log('Folder ID:', folderId);
     // Expand or collapse the dropdown
     setDropdownOpen(flag ? folderId : null);
   
-    // Fetch notes if the folder is being opened and notes haven't been fetched yet
-    if (flag && !folderNotes[folderId]) {
+    // Fetch notes every time the folder is opened
+    if (flag) {
       console.log('Fetching notes for folder:', folderId);
       try {
         const response = await axios.get(`http://localhost:8000/api/v1/user/folder/notes/${folderId}`, {
           withCredentials: true,
         });
+  
         // Ensure that response.data and response.data.folder exist before accessing notes
         if (response.data && response.data.folder && Array.isArray(response.data.folder.notes)) {
           console.log('Available notes');
@@ -74,6 +78,7 @@ const SidebarComponent = ({ username, notes, folders, onNoteSelect, onDelete, on
       }
     }
   };
+  
   
 
   const toggleMobileSidebar = () => {
@@ -117,30 +122,47 @@ const SidebarComponent = ({ username, notes, folders, onNoteSelect, onDelete, on
   };
 
   const handleCreateFolder = async () => {
-    if (!newFolderName.trim()) return;
-  
-    try {
-      const response = await axios.post('http://localhost:8000/api/v1/user/folder/create', { folderName: newFolderName }, { withCredentials: true });
-      const createdFolder = response.data;
-      // setFolder([...folders, createdFolder]);  // Update the folders state
-      onAddFolder(createdFolder);  // Pass the new folder up to the parent component
-      setNewFolderName('');  // Reset the input field
-      setIsCreatingFolder(false);  // Hide the input field
-      notification.success({
-        message: 'Success',
-        description: 'Folder created successfully.'
-      });
-    } catch (error) {
-      console.error('Error creating folder:', error);
-      // work on the error
-      setError()
-      setIsCreatingFolder(false)
-      setNewFolderName('')
+    if (newFolderName.trim() != '') {
+      try {
+        const response = await axios.post('http://localhost:8000/api/v1/user/folder/create/new', { folderName: newFolderName }, { withCredentials: true });
+        const createdFolder = response.data;
+        // setFolder([...folders, createdFolder]);  // Update the folders state
+        onAddFolder(createdFolder);  // Pass the new folder up to the parent component
+        setNewFolderName('');  // Reset the input field
+        setIsCreatingFolder(false);  // Hide the input field
+        notification.success({
+          message: 'Success',
+          description: 'Folder created successfully.'
+        });
+      } catch (error) {
+        if (error.response && error.response.status === 409) {
+          console.error('Folder already exists:', error);
+          notification.error({
+            message: 'Error',
+            description: 'A folder with the same name already exists.'
+          });
+        }
+        else {
+          console.error('Error creating folder:', error);
+          // work on the error
+          setError()
+          setIsCreatingFolder(false)
+          setNewFolderName('')
+          notification.error({
+            message: 'Error',
+            description: 'Failed to create the folder. Please try again.'
+          });
+        }
+
+      }
+    } else if (newFolderName.trim() === '') {
       notification.error({
         message: 'Error',
-        description: 'Failed to create the folder. Please try again.'
+        description: 'Folder name cannot be empty.'
       });
     }
+      // Whether a folder was created or not, hide the input field
+      setIsCreatingFolder(false);
   };
   
   const keepDropdownOpen = (isOpen, noteId) => {
@@ -162,10 +184,6 @@ const SidebarComponent = ({ username, notes, folders, onNoteSelect, onDelete, on
       }, 500);
     }
   };
-  
-  
-  
-  
   
     // Dropdown menu for user settings
     const userMenu = (
@@ -216,7 +234,7 @@ const SidebarComponent = ({ username, notes, folders, onNoteSelect, onDelete, on
                   <Input prefix={<SearchOutlined />} className="my-4" placeholder="Search notes" />
 
             {/* Folder creation area */}
-                  <div className="folder-creation-area">
+            <div className="folder-creation-area">
           {isCreatingFolder ? (
             <Input
               type="text"
@@ -224,7 +242,7 @@ const SidebarComponent = ({ username, notes, folders, onNoteSelect, onDelete, on
               value={newFolderName}
               onChange={(e) => setNewFolderName(e.target.value)}
               onPressEnter={handleCreateFolder}
-              onBlur={handleCreateFolder}
+              onBlur={() => setIsCreatingFolder(false)}
               autoFocus
             />
           ) : (

@@ -15,8 +15,8 @@ const userSchema: Schema = new Schema<Vuser> ({
     userName: {type: String, required: [true, "userName is required"], unique: true},
     email: {type: String, required: [true, "email is required"], unique: true},
     password: {type: String, required: [true, "password is required"]},
-    createdAt: {type: Date, default: Date.now()},
-    updatedAt: {type: Date, default: Date.now()}
+}, {
+    timestamps: true // This adds createdAt and updatedAt fields automatically
 });
 
 const User: Model<Vuser> = mongoose.model<Vuser>("User", userSchema, "users_collection");
