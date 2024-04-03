@@ -68,7 +68,7 @@ export default function Page() {
 
 
 
-  const handleTranscriptionSave = (text, filename) => {
+  const handleTranscriptionSave = (text, filename, selectedFolderId) => {
     setError('');  // Clear any previous errors
     console.log('Saving', { text, filename });
       // Initialize the data object with content
@@ -117,13 +117,19 @@ export default function Page() {
     });
   };
 
-  const handleNoteSelect = (note) => {
-    setCurrentNote({ content: note.content, title: note.title });
+  const handleNoteSelect = (note, e) => {
+    e.stopPropagation(); // Stop the click from propagating
+    console.log('selecting note', note)
+    setCurrentNote({ content: note.content, title: note.fileName });
+    console.log(currentNote)
   };
 
-  const handleDeleteNote = (noteId, e) => {
+  const handleDeleteNote = (noteId) => {
     // Update the state to filter out the deleted note
-    e.stopPropagation();
+    console.log('deleting note', noteId)
+    if (!noteId) {
+      console.log('No note id')
+    }
     const updatedNotes = notes.filter(note => note.id !== noteId);
     setNotes(updatedNotes);
 
@@ -138,6 +144,7 @@ export default function Page() {
   };
 
   const handleRenameNote = (noteId, newName) => {
+    console.log('renaming note', noteId, newName)
     const updatedNotes = notes.map(note => {
       if (note.id === noteId) {
         return { ...note, title: newName };
@@ -170,7 +177,10 @@ export default function Page() {
       <div className="flex flex-col justify-center min-h-screen bg-gray-600 p-5">
         <VoiceRecorder onTranscriptionComplete={handleTranscription} />
         <div className="w-full max-w-3xl mx-auto mb-5 justify-center">
-          <TranscriptionEditor transcriptionText={transcriptionText || currentNote.content} fileName={currentNote.title} onSave={handleTranscriptionSave}/>
+          <TranscriptionEditor transcriptionText={transcriptionText || currentNote.content}
+           fileName={currentNote.title} 
+           onSave={handleTranscriptionSave}
+           folders={folders}/>
           {error && <div className="text-red-500 text-center">{error}</div>}
         </div>
         <SidebarComponent username={'ola'} 

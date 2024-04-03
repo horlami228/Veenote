@@ -6,6 +6,7 @@ import { MoreOutlined, EditOutlined, DeleteOutlined, FolderAddOutlined } from '@
 import { Menu, Dropdown, Input, Modal, notification, Button } from 'antd';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import NoteItem from './NoteItem';
 
 const SidebarComponent = ({ username, notes, folders, onNoteSelect, onDelete, onRename, onAddFolder }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -18,7 +19,7 @@ const SidebarComponent = ({ username, notes, folders, onNoteSelect, onDelete, on
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
   const [error, setError] = useState('');
-
+  const [openDropdownId, setOpenDropdownId] = useState(null);
 
 
   useEffect(() => {
@@ -85,6 +86,8 @@ const SidebarComponent = ({ username, notes, folders, onNoteSelect, onDelete, on
   console.log('The onNoteSelect is a', typeof onNoteSelect); // Should output 'function'
   
   const showDeleteConfirm = (noteId) => {
+    console.log('noteId in showDeleteConfirm:', noteId); // Check the received noteId
+
     Modal.confirm({
       title: 'Are you sure you want to delete this note?',
       content: 'This action cannot be undone.',
@@ -97,10 +100,10 @@ const SidebarComponent = ({ username, notes, folders, onNoteSelect, onDelete, on
     });
   };
 
-  const startRenaming = (note, e) => {
-    e.stopPropagation();  // Prevent the click event from bubbling up
+  const startRenaming = (note) => {
+    console.log('note in startRenaming:', note);  // Check the note object
     setIsRenaming(note.id);
-    setNewName(note.title);
+    setNewName(note.fileName);
   };
   
   
@@ -140,6 +143,29 @@ const SidebarComponent = ({ username, notes, folders, onNoteSelect, onDelete, on
     }
   };
   
+  const keepDropdownOpen = (isOpen, noteId) => {
+    if (isOpen) {
+      // Open the dropdown and set its ID as the openDropdownId
+      setOpenDropdownId(noteId);
+    } else if (!isOpen && openDropdownId === noteId) {
+      // If trying to close the same dropdown that's currently open, decide based on conditions
+      // Here, you can add logic to delay closing or prevent it under certain conditions
+  
+      // Example: Delay closing the dropdown for 500ms
+      // This can be useful if there's a need to wait for some interaction to complete
+      // inside the dropdown before it closes.
+      setTimeout(() => {
+        // Ensure that after the timeout, the intended dropdown is still the one to be closed.
+        if (openDropdownId === noteId) {
+          setOpenDropdownId(null);
+        }
+      }, 500);
+    }
+  };
+  
+  
+  
+  
   
     // Dropdown menu for user settings
     const userMenu = (
@@ -154,65 +180,7 @@ const SidebarComponent = ({ username, notes, folders, onNoteSelect, onDelete, on
           Profile Settings
         </Menu.Item> */}
       </Menu>
-    );
-  
-    const notesMenu = (
-      <Menu className="overflow-y-auto max-h-72">
-        {notes.map((note, index) => (
-          <Menu.Item key={note.id}>
-            <div className="flex justify-between items-center">
-            {isRenaming === note._id ? (
-              <Input
-              value={newName}
-              onChange={(e) => {
-                e.stopPropagation(); // Prevent event propagation
-                setNewName(e.target.value);
-              }}
-              onPressEnter={(e) => {
-                e.stopPropagation(); // Prevent event propagation
-                handleRenameConfirm(note.id);
-              }}
-              onBlur={(e) => {
-                e.stopPropagation(); // Prevent event propagation
-                handleRenameConfirm(note.id);
-              }}
-              autoFocus
-            />
-       
-            ) : ( <div
-                className="flex-grow cursor-pointer hover:underline"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onNoteSelect(note)
-                }}
-              >
-                {note.title}
-              </div>
-            )}
-              <Dropdown
-                overlay={
-                  <Menu>
-                    <Menu.Item key="rename" icon={<EditOutlined />}>
-                    <button onClick={(e) => startRenaming(note, e)} style={{ all: 'unset' }}>
-                      Rename
-                    </button>
-                    </Menu.Item>
-                    <Menu.Item key="delete" icon={<DeleteOutlined />}  onClick={(e) => showDeleteConfirm(note.id)
-                    }>
-                      Delete
-                    </Menu.Item>
-                  </Menu>
-                }
-                trigger={['click']}
-              >
-                <MoreOutlined className="cursor-pointer" onClick={(e) => e.stopPropagation()} />
-              </Dropdown>
-            </div>
-          </Menu.Item>
-        ))}
-      </Menu>
-    );
-  
+    );  
 
   return (
     <div>
@@ -246,6 +214,7 @@ const SidebarComponent = ({ username, notes, folders, onNoteSelect, onDelete, on
                 <div className="px-4 flex flex-col items-center">
                   <span className="text-2xl font-medium mt-2">{username}</span>
                   <Input prefix={<SearchOutlined />} className="my-4" placeholder="Search notes" />
+
             {/* Folder creation area */}
                   <div className="folder-creation-area">
           {isCreatingFolder ? (
@@ -272,9 +241,20 @@ const SidebarComponent = ({ username, notes, folders, onNoteSelect, onDelete, on
                   {
                     (folderNotes[folder._id] && folderNotes[folder._id].length > 0) ?
                     folderNotes[folder._id].map((note) => (
-                      <Menu.Item key={note._id} onClick={() => onNoteSelect(note)}>
-                        {note.content}
-                      </Menu.Item>
+                              <NoteItem
+                                key={note.id}
+                                note={note}
+                                onNoteSelect={onNoteSelect}
+                                isRenaming={isRenaming}
+                                newName={newName}
+                                setNewName={setNewName}
+                                handleRenameConfirm={handleRenameConfirm}
+                                startRenaming={startRenaming}
+                                showDeleteConfirm={showDeleteConfirm}
+                                keepDropdownOpen={(isOpen) => keepDropdownOpen(isOpen, note.id)}
+                                openDropdownId={openDropdownId}
+                                setIsRenaming={setIsRenaming}
+                            />
                     )) :
                     <Menu.Item disabled>No notes available</Menu.Item> // Display when no notes are available
                   }
