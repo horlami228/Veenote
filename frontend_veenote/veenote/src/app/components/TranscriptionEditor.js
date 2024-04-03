@@ -43,7 +43,6 @@ const TranscriptionEditor = ({ transcriptionText, fileName, onSave, folders }) =
   onSave(text, filename, selectedFolderId);
   setText('');
   setFilename('');
-  setSelectedFolderId(rootFolde._id.toString());
 }
 
 

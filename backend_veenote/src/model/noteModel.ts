@@ -18,8 +18,8 @@ const noteSchema: Schema = new Schema<Vnote>({
     content: {type: String, required: true},
     userId: {type: Schema.Types.ObjectId, ref: "User"},
     folderId: {type: Schema.Types.ObjectId, ref: "Folder"},
-    createdAt: {type: Date, default: Date.now()},
-    updatedAt: {type: Date, default: Date.now()}
+}, {
+    timestamps: true // This adds createdAt and updatedAt fields automatically
 });
 
 const Note: Model<Vnote> = mongoose.model<Vnote>("Note", noteSchema, "notes_collection");

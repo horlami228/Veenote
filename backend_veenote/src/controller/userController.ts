@@ -159,7 +159,7 @@ export const updateUser = (req: Request, res: Response) => {
     
     const userId = (req as Request & { user: any }).user._id;
 
-    User.findOneAndUpdate({ _id: userId }, req.body)
+    User.findOneAndUpdate({ _id: userId }, req.body, { new: true })
     .then(user => {
         if (!user) {
             return res.status(404).json({
@@ -167,8 +167,6 @@ export const updateUser = (req: Request, res: Response) => {
             });
         }
 
-        // update the updatedAt field
-        user.updatedAt = new Date();
         user.save();
         
         // if the user is successfully updated, send a 200 OK response

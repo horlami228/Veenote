@@ -1,6 +1,6 @@
 import React from 'react';
 import { Menu, Input, Dropdown } from 'antd';
-import { MoreOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { MoreOutlined, EditOutlined, DeleteOutlined, DownloadOutlined } from '@ant-design/icons';
 
 const NoteItem = ({ note, 
   onNoteSelect, 
@@ -32,7 +32,7 @@ const NoteItem = ({ note,
           className="flex-grow cursor-pointer hover:underline"
           onClick={(e) => onNoteSelect(note, e)}
         >
-          {note.content}
+          {note.fileName}
         </div>
       )}
       <Dropdown
@@ -43,6 +43,9 @@ const NoteItem = ({ note,
             </Menu.Item>
             <Menu.Item key="delete" icon={<DeleteOutlined />} onClick={(e) => {e.domEvent.stopPropagation(); showDeleteConfirm(note.id);}}>
               Delete
+            </Menu.Item>
+            <Menu.Item key="download" icon={<DownloadOutlined />} onClick={(e) => {e.domEvent.stopPropagation(); showDeleteConfirm(note.id);}}>
+              Download
             </Menu.Item>
           </Menu>
         }

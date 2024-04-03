@@ -47,7 +47,7 @@ export const login = async (req: Request, res: Response) => {
         }
     
         // Respond with a 200 OK status and the jwt token if the login is successful.
-        const jwtToken = jwt.sign({ id: user._id }, secretKey, {expiresIn: "1h"});
+        const jwtToken = jwt.sign({ id: user._id, userName: user.userName }, secretKey, {expiresIn: "1h"});
         return res.status(200).json({ message: "User logged in successfully", token: jwtToken });
 
     } catch (error) {
@@ -76,6 +76,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
         next();
     } catch (error) {
         if (error instanceof Error) {
+            console.log(error.message);
             res.status(400).json({ Error: error.message });
         }
     }

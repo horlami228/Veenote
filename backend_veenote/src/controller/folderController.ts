@@ -50,14 +50,14 @@ export const createFolder = async  (req: Request, res: Response) => {
         if (error instanceof Error) {
             if (error.message.includes("E11000")) {
                 // Responds with a 409 Conflict status if the folder name already exists.
-                res.status(409).json({
+                return res.status(409).json({
                     "Error": "Folder Already Exists",
                     "Details": error.message
                 });
             }
             
             // Responds with a 500 Internal Server Error status and the error details if an exception occurs.
-            res.status(500).json({
+            return res.status(500).json({
                 "Error": "Error Creating A Folder",
                 "Details": error.message
             });
@@ -171,15 +171,13 @@ export const updateFolder = async (req: Request, res: Response) => {
     const folderName = req.params.folderName;
     const folderData = req.body;
 
-    Folder.findOneAndUpdate({ folderName: folderName }, folderData)
+    Folder.findOneAndUpdate({ folderName: folderName }, folderData, { new: true })
     .then((folder) => {
         if (!folder) {
             return res.status(404).json({
                 message: "Folder not found"
             });
         }
-        // update the updatedAt field
-        folder.updatedAt = new Date();
         folder.save();
         // if successful, send a 200 OK with the updated data
         res.status(200).json({ updated: folder });

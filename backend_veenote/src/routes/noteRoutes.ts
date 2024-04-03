@@ -11,7 +11,7 @@ const router = Router();
  * POST /user/create/note/new
  * The actual logic for user creation is encapsulated in the createFolder function within the folderController.
  */
-router.post('/user/create/note/new', authMiddleware, createNote);
+router.post('/user/create/note/:folderId/new', authMiddleware, createNote);
 
 
 /**

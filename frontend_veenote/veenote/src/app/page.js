@@ -9,14 +9,10 @@ import axios from 'axios';
 import { notification } from 'antd';
 import './globals.css';
 import { useRouter } from 'next/navigation';
+import { observer } from 'mobx-react';
+import { authStore } from './components/AuthStore';
 
-export default function Page() {
-  const userNotes = Array.from({ length: 120 }, (v, i) => ({
-    title: `Note ${i + 1}`,
-    content: `Content for Note ${i + 1}`, // Assuming each note has a content property
-    id: i + 1
-  }));
-
+function Page() {
   const [notes, setNotes] = useState([]);
   const [transcriptionText, setTranscriptionText] = useState('');
   const [error, setError] = useState('');
@@ -24,25 +20,9 @@ export default function Page() {
   const [foldersName, setFoldersName] = useState([])
   const [currentNote, setCurrentNote] = useState({ content: '', title: '' });
   const router = useRouter();
+  const username = authStore.username;
+  console.log('username', username);
 
-  const mockFolders = [
-    {
-      id: 1,
-      name: 'Work',
-    },
-    {
-      id: 2,
-      name: 'Personal',
-    },
-    {
-      id: 3,
-      name: 'Travel',
-    },
-    {
-      id: 4,
-      name: 'Archive',
-    }
-  ];
   useEffect(() => {
     console.log('fetching folders')
     const fetchFolders = async () => {
@@ -81,7 +61,7 @@ export default function Page() {
       data.fileName = filename;
     }
     // Implement the saving logic here, e.g., API call or localStorage update
-    axios.post('http://localhost:8000/api/v1/user/create/note/new', data, {
+    axios.post(`http://localhost:8000/api/v1/user/create/note/${selectedFolderId}/new`, data, {
       withCredentials: true,
     })
     .then((response) => {
@@ -145,22 +125,23 @@ export default function Page() {
 
   const handleRenameNote = (noteId, newName) => {
     console.log('renaming note', noteId, newName)
-    const updatedNotes = notes.map(note => {
-      if (note.id === noteId) {
-        return { ...note, title: newName };
-      }
-      return note;
-    });
-    setNotes(updatedNotes);
-  
-    // Optionally, send a request to update the backend
-    // axios.put(`http://localhost:8000/api/v1/notes/${noteId}`, { title: newName })
-    //   .then(response => {
-    //     // Handle response
-    //   })
-    //   .catch(error => {
-    //     console.error('Error updating note:', error);
-    //   });
+    // send a request to update the note filename
+    axios.put(`http://localhost:8000/api/v1/user/note/update/${noteId}`, 
+    { fileName: newName },
+    {withCredentials: true})
+      .then(response => {
+        // Handle response, if necessary
+        notification.success({
+          message: 'Rename Success'
+        })
+      })
+      .catch(error => {
+        console.error('Error updating note:', error);
+        notification.error({
+          message: 'Rename Error',
+          description: 'Failed to rename the note. Please try again.'
+        });
+      });
   };
 
   const handleTranscription = (newTranscription) => {
@@ -183,8 +164,7 @@ export default function Page() {
            folders={folders}/>
           {error && <div className="text-red-500 text-center">{error}</div>}
         </div>
-        <SidebarComponent username={'ola'} 
-        notes={userNotes} 
+        <SidebarComponent username={username} 
         folders={folders} 
         onNoteSelect={handleNoteSelect} 
         onDelete={handleDeleteNote} 
@@ -195,3 +175,4 @@ export default function Page() {
   );
 }
 
+export default observer(Page);
