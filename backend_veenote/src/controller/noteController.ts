@@ -196,3 +196,31 @@ export const getNote = async (req: Request, res: Response) => {
       });
     });
 };
+
+// controller to download a note content
+export const downloadNote = async (req: Request, res: Response) => {
+  const noteId = req.params.noteId;
+
+  Note.findOne({ _id: noteId })
+    .then((note) => {
+      if (!note) {
+        return res.status(404).json({
+          message: "Note not found",
+        });
+      }
+
+      // Set headers to instruct the browser to download the file
+      res.setHeader('Content-Disposition', `attachment; filename=${note.fileName}.txt`);
+      res.setHeader('Content-Type', 'text/plain');
+      
+      // Send the note content as the file content
+      res.send(note.content);
+    })
+    .catch((error) => {
+      res.status(500).json({
+        message: "Error retrieving note content",
+        details: error.message,
+      });
+    });
+};
+

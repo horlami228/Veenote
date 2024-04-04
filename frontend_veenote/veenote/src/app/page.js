@@ -105,23 +105,37 @@ function Page() {
   };
 
   const handleDeleteNote = (noteId) => {
-    // Update the state to filter out the deleted note
-    console.log('deleting note', noteId)
-    if (!noteId) {
-      console.log('No note id')
-    }
-    const updatedNotes = notes.filter(note => note.id !== noteId);
-    setNotes(updatedNotes);
-
-    // If you have a backend, send a request to delete the note
-    // axios.delete(`http://localhost:8000/api/v1/notes/${noteId}`)
-    //   .then(response => {
-    //     // Handle the response, if necessary
-    //   })
-    //   .catch(error => {
-    //     console.error('Error deleting the note:', error);
-    //   });
+   // send delete request
+    axios.delete(`http://localhost:8000/api/v1/user/note/delete/${noteId}`, {
+      withCredentials: true,
+    
+    })
+      .then(response => {
+        notification.success({
+          message: 'Delete Success'
+        })
+      })
+      .catch(error => {
+        console.error('Error deleting the note:', error);
+        notification.error({
+          message: 'Delete Error',
+          description: 'Failed to delete the note. Please try again.'
+        })
+      });
   };
+
+  const handleDownload = (noteId) => {
+    try {
+      const downloadUrl = `http://localhost:8000/api/v1/user/note/download/${noteId}`;
+      window.open(downloadUrl, '_blank');
+    } catch (error) {
+      console.error('Error downloading the note:', error);
+      notification.error({
+        message: 'Download Error',
+        description: 'Failed to download the note. Please try again.'
+      });
+    }
+  }
 
   const handleRenameNote = (noteId, newName) => {
     console.log('renaming note', noteId, newName)
@@ -169,7 +183,8 @@ function Page() {
         onNoteSelect={handleNoteSelect} 
         onDelete={handleDeleteNote} 
         onRename={handleRenameNote}
-        onAddFolder={handleAddFolder}/>
+        onAddFolder={handleAddFolder}
+        onDownload={handleDownload}/>
       </div>
     </AuthProvider>
   );

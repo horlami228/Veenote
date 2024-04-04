@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createNote, deleteNote, updateNote, getNote, getAllNotes}
+import { createNote, deleteNote, updateNote, getNote, getAllNotes, downloadNote}
  from '../controller/noteController.js';
 import { authMiddleware } from "../controller/auth/authController.js";
 
@@ -44,5 +44,12 @@ router.get('/user/note/:noteId', authMiddleware, getNote);
  * The actual logic for user creation is encapsulated in the getAllNotes function within the noteController.
  */
 router.get('/user/notes/get', authMiddleware, getAllNotes);
+
+/** Route to download a note 
+ * GET /user/note/download/:noteId
+ * The actual logic for user creation is encapsulated in the downloadNote function within the noteController.
+*/
+
+router.get('/user/note/download/:noteId', authMiddleware, downloadNote);
 
 export default router;
