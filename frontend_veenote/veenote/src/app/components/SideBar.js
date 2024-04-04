@@ -7,10 +7,11 @@ import { Menu, Dropdown, Input, Modal, notification, Button } from 'antd';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import NoteItem from './NoteItem';
+import UserProfileModal from './userProfileModal';
 
 
 // Sidebar component
-const SidebarComponent = ({ username, folders, onNoteSelect, onDelete, onRename, onAddFolder }) => {
+const SidebarComponent = ({ username, folders, onNoteSelect, onDelete, onRename, onAddFolder, onDownload }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [isMobileSidebarVisible, setIsMobileSidebarVisible] = useState(false);
@@ -22,6 +23,8 @@ const SidebarComponent = ({ username, folders, onNoteSelect, onDelete, onRename,
   const [newFolderName, setNewFolderName] = useState('');
   const [error, setError] = useState('');
   const [openDropdownId, setOpenDropdownId] = useState(null);
+  const [isUserSettingsModalVisible, setIsUserSettingsModalVisible] = useState(false);
+
 
 
   useEffect(() => {
@@ -88,7 +91,15 @@ const SidebarComponent = ({ username, folders, onNoteSelect, onDelete, onRename,
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
   };
-  console.log('The onNoteSelect is a', typeof onNoteSelect); // Should output 'function'
+
+  const showUserSettingsModal = () => {
+    setIsUserSettingsModalVisible(true);
+  };
+  
+  const hideUserSettingsModal = () => {
+    setIsUserSettingsModalVisible(false);
+  };
+  
   
   const showDeleteConfirm = (noteId) => {
     console.log('noteId in showDeleteConfirm:', noteId); // Check the received noteId
@@ -104,6 +115,21 @@ const SidebarComponent = ({ username, folders, onNoteSelect, onDelete, onRename,
       },
     });
   };
+
+  const showDownloadConfirm = (noteId) => {
+    console.log('noteId in showDownloadConfirm:', noteId); // Check the received noteId
+
+    Modal.confirm({
+      title: 'Are you sure you want to download this note?',
+      okText: 'Yes',
+      okType: 'primary',
+      okButtonProps: { style: { color: 'black', backgroundColor: '#f0f0f0' } },
+      cancelText: 'No',
+      onOk() {
+        onDownload(noteId);
+      },
+    });
+  }
 
   const startRenaming = (note) => {
     console.log('note in startRenaming:', note);  // Check the note object
@@ -184,11 +210,13 @@ const SidebarComponent = ({ username, folders, onNoteSelect, onDelete, onRename,
       }, 500);
     }
   };
+
+  
   
     // Dropdown menu for user settings
     const userMenu = (
       <Menu>
-        <Menu.Item key="0">
+        <Menu.Item key="0" onClick={showUserSettingsModal}>
           <SettingOutlined style={{ marginRight: 8 }} />
           Profile Settings
         </Menu.Item>
@@ -202,6 +230,9 @@ const SidebarComponent = ({ username, folders, onNoteSelect, onDelete, onRename,
 
   return (
     <div>
+      {/* User profile settings modal */}
+      <UserProfileModal isVisible={isUserSettingsModalVisible} onClose={hideUserSettingsModal} />
+
       {/* Hamburger icon for mobile screens */}
       {!isLargeScreen && !isMobileSidebarVisible && (
         <div className="fixed top-0 left-0 p-4 z-20">
@@ -210,7 +241,7 @@ const SidebarComponent = ({ username, folders, onNoteSelect, onDelete, onRename,
       )}
 
       {/* Sidebar */}
-      <div className={`fixed top-0 left-0 z-10 bg-gray-200 transition-all duration-300 h-full ${
+      <div className={`fixed top-0 left-0 z-10 bg-gray-300 transition-all duration-300 h-full ${
         isLargeScreen ? (collapsed ? 'w-16' : 'w-64') : (isMobileSidebarVisible ? 'w-64' : 'w-0')
       }`}>
         {!isLargeScreen && isMobileSidebarVisible && (
@@ -269,6 +300,7 @@ const SidebarComponent = ({ username, folders, onNoteSelect, onDelete, onRename,
                                 handleRenameConfirm={handleRenameConfirm}
                                 startRenaming={startRenaming}
                                 showDeleteConfirm={showDeleteConfirm}
+                                showDownloadConfirm={showDownloadConfirm}
                                 keepDropdownOpen={(isOpen) => keepDropdownOpen(isOpen, note.id)}
                                 openDropdownId={openDropdownId}
                                 setIsRenaming={setIsRenaming}

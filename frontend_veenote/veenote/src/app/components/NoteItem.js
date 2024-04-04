@@ -10,6 +10,7 @@ const NoteItem = ({ note,
   handleRenameConfirm, 
   startRenaming, 
   showDeleteConfirm,
+  showDownloadConfirm,
   keepDropdownOpen,
   openDropdownId,
   setIsRenaming }) => (
@@ -41,10 +42,10 @@ const NoteItem = ({ note,
             <Menu.Item key="rename" icon={<EditOutlined />} onClick={(e) => { e.domEvent.stopPropagation(); startRenaming(note, e);}}>
               Rename
             </Menu.Item>
-            <Menu.Item key="delete" icon={<DeleteOutlined />} onClick={(e) => {e.domEvent.stopPropagation(); showDeleteConfirm(note.id);}}>
+            <Menu.Item key="delete" icon={<DeleteOutlined />} onClick={(e) => {e.domEvent.stopPropagation(); showDeleteConfirm(note.id);}} style={{ color: 'red' }}>
               Delete
             </Menu.Item>
-            <Menu.Item key="download" icon={<DownloadOutlined />} onClick={(e) => {e.domEvent.stopPropagation(); showDeleteConfirm(note.id);}}>
+            <Menu.Item key="download" icon={<DownloadOutlined />} onClick={(e) => {e.domEvent.stopPropagation(); showDownloadConfirm(note.id);}}>
               Download
             </Menu.Item>
           </Menu>

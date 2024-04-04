@@ -143,16 +143,11 @@ function VoiceRecorder({onTranscriptionComplete}) {
     
         const data = JSON.parse(event.data);
         if (data.type === 'finalTranscript') {
-            setIsLoading(true);
-    
-            // Introduce a delay before processing the final transcript
-            setTimeout(() => {
-                console.log('Final transcript:', data.message);
-                onTranscriptionComplete(data.message);
-               
-            }, 1000); // Delay for 500 milliseconds (adjust as needed)
+          console.log('Final transcript:', data.message);
+          onTranscriptionComplete(data.message);
         }
         websocketRef.current.close();
+        setIsLoading(false);
     };
     
       websocketRef.current.onclose = () => {
@@ -206,11 +201,14 @@ function VoiceRecorder({onTranscriptionComplete}) {
       clearInterval(intervalRef.current);
       setIsRecording(false);
       setDuration(0);
-
+      setIsLoading(true);
+      setTimeout(() => {
       // Send a message to the server indicating the end of the audio stream
       if (websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN) {
-        websocketRef.current.send(JSON.stringify({ type: 'endOfAudio' }));
-    }
+      websocketRef.current.send(JSON.stringify({ type: 'endOfAudio' }));
+      }
+    }, 1000); 
+
   }
 };
 
