@@ -19,8 +19,9 @@ function Page() {
   const [folders, setFolder] = useState([]);
   const [foldersName, setFoldersName] = useState([])
   const [currentNote, setCurrentNote] = useState({ content: '', title: '' });
+  const [username, setUsername] = useState('');
   const router = useRouter();
-  const username = authStore.username;
+  // const username = authStore.username;
   console.log('username', username);
 
   useEffect(() => {
@@ -41,9 +42,7 @@ function Page() {
       }
     };
 
-    fetchFolders()
-
-    // setFolder(mockFolders);
+    fetchFolders();
   }, []);
 
 
@@ -166,7 +165,26 @@ function Page() {
     setFolder([...folders, newFolder]);
   };
   
-  
+
+  useEffect(() => {
+    getUserName();
+  }, [])
+
+  const getUserName = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/v1/user/username', {
+        withCredentials: true,
+      });
+      setUsername(response.data.userName);
+    } catch (error) {
+      console.error('Error fetching username:', error);
+      notification.error({
+        message: 'Error',
+        description: 'Failed to fetch username. Please try again.'
+      })
+    }
+  };
+
   return (
     <AuthProvider>
       <div className="flex flex-col justify-center min-h-screen bg-gray-600 p-5">
@@ -178,7 +196,7 @@ function Page() {
            folders={folders}/>
           {error && <div className="text-red-500 text-center">{error}</div>}
         </div>
-        <SidebarComponent username={username} 
+        <SidebarComponent username={username || 'User'} 
         folders={folders} 
         onNoteSelect={handleNoteSelect} 
         onDelete={handleDeleteNote} 

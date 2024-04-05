@@ -1,7 +1,8 @@
 import {Request, Response} from 'express';
 import User from '../model/userModel.js';
 import Folder from '../model/folderModel.js';
-import { hashPassword } from '../utilities/passwordHashing.js';
+import Note from '../model/noteModel.js';
+import { hashPassword,  comparePassword } from '../utilities/passwordHashing.js';
 
 // Define the 'createUser' controller function as an asynchronous function to handle POST requests for creating a new user.
 export const createUser = async  (req: Request, res: Response) => {
@@ -135,15 +136,38 @@ export const userByName = (req: Request, res: Response) => {
 };
 
 
-export const deleteUser = (req: Request, res: Response) => {
-    const id: string = req.params.userName;
+export const deleteUser = async (req: Request, res: Response) => {
 
-    User.findOneAndDelete({"_id": id})
-    .then(user => {
+    const userId = (req as Request & { user: any }).user._id;
 
-        // if succesful send a 200 OK with the deleted data
-        res.status(200).json({"Deleted": user});
-        
+    // first delete all notes with the userId
+    Note.deleteMany({ userId: userId })
+    .then(() => {
+        // delete all folder with the userId
+        Folder.deleteMany({ userId: userId })
+        .then(() => {
+            // delete the user with the userId
+            User.findOneAndDelete({ _id: userId })
+            .then(() => {
+                // if succesful send a 204 no content response
+                res.status(204).send();
+            })
+            .catch(error => {
+                // if error occured response with 500 Internal Server Error and print out error
+                // error message is included in the response
+                res.status(500).json({
+                    "Error": "Failed to perform delete",
+                    "Details": error.message
+                });
+        })
+        .catch(error => {
+            // if error occured response with 500 Internal Server Error and print out error
+            // error message is included in the response
+            res.status(500).json({
+                "Error": "Failed to perform delete",
+                "Details": error.message
+            });
+        });
     })
     .catch(error => {
         // if error occured response with 500 Internal Server Error and print out error
@@ -153,13 +177,157 @@ export const deleteUser = (req: Request, res: Response) => {
             "Details": error.message
         });
     });
+    });
 };
 
-export const updateUser = (req: Request, res: Response) => {
-    
-    const userId = (req as Request & { user: any }).user._id;
+export const updateUserUserName = async (req: Request, res: Response) => {
+    try {
+        const userId = (req as Request & { user: any }).user.id;
+        const userName = req.body.userName;
 
-    User.findOneAndUpdate({ _id: userId }, req.body, { new: true })
+        // Check if the username is provided
+        if (!userName) {
+            return res.status(400).json({
+                message: "Username is required",
+            });
+        }
+
+        // Check if a user with the provided username already exists
+        const existingUser = await User.findOne({ userName: userName });
+        if (existingUser) {
+            return res.status(409).json({
+                message: "User with the provided username already exists",
+            });
+        }
+
+        // Update the user's username
+        const updatedUser = await User.findOneAndUpdate(
+            { _id: userId },
+            { $set: { userName: userName } },
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({
+                message: "User not found",
+            });
+        }
+
+        // Respond with success
+        res.status(200).json({
+            message: "Username updated successfully",
+        });
+
+    } catch (error) {
+        if (error instanceof Error) {
+            return res.status(500).json({
+                message: "Error updating username",
+                details: error.message,
+            });
+        }
+    }
+};
+
+export const updateUserEmail = async (req: Request, res: Response) => {
+    try {
+        const userId = (req as Request & { user: any }).user.id;
+        const email = req.body.email;
+
+        // Check if the email is provided
+        if (!email) {
+            return res.status(400).json({
+                message: "Email is required",
+            });
+        }
+
+        // Check if a user with the provided email already exists
+        const existingUser = await User.findOne({ email: email });
+        if (existingUser) {
+            return res.status(409).json({
+                message: "User with the provided email already exists",
+            });
+        }
+
+        // Update the user's email
+        const updatedUser = await User.findOneAndUpdate(
+            { _id: userId },
+            { $set: { email: email } },
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({
+                message: "User not found",
+            });
+        }
+
+        // Respond with success
+        res.status(200).json({
+            message: "Email updated successfully",
+        });
+
+    } catch (error) {
+        if (error instanceof Error) {
+            return res.status(500).json({
+                message: "Error updating email",
+                details: error.message,
+            });
+        }
+    }
+};
+
+
+export const UpdateUserPassword = async (req: Request, res: Response) => {
+    try {
+        const user = (req as Request & { user: any }).user;
+        const { oldPassword, newPassword } = req.body;
+
+        if (!oldPassword || !newPassword) {
+            return res.status(400).json({
+                message: "Old password and new password are required.",
+            });
+        }
+
+        // Find the user by ID to ensure they exist and to retrieve the current password
+        const currentUser = await User.findById(user._id);
+        if (!currentUser) {
+            return res.status(404).json({
+                message: "User not found.",
+            });
+        }
+
+        // Compare the provided old password with the stored password
+        const isMatch = await comparePassword(oldPassword, currentUser.password);
+        if (!isMatch) {
+            return res.status(400).json({
+                message: "Invalid password.",
+            });
+        }
+
+        // If the passwords match, hash the new password and update it
+        const newHashedPassword = await hashPassword(newPassword);
+        currentUser.password = newHashedPassword;
+        await currentUser.save();
+
+        res.status(200).json({
+            message: "Password updated successfully.",
+        });
+    } catch (error) {
+        if (error instanceof Error) {
+            res.status(500).json({
+                message: "Error updating password.",
+                details: error.message,
+            });
+        }
+    }
+};
+
+
+export const getUserName = async (req: Request, res: Response) => {
+    // get the userId from the request object
+    const userId = (req as Request & { user: any }).user.id;
+
+    User.findOne({ _id: userId })
     .then(user => {
         if (!user) {
             return res.status(404).json({
@@ -167,17 +335,13 @@ export const updateUser = (req: Request, res: Response) => {
             });
         }
 
-        user.save();
-        
-        // if the user is successfully updated, send a 200 OK response
         res.status(200).json({
-            message: "User updated successfully",
+            userName: user.userName,
         });
     })
     .catch(error => {
-        // if there is an error during query, respond with a 500 Internal Server Error
         res.status(500).json({
-            message: "Error updating user",
+            message: "Error getting user",
             details: error.message,
         });
     });

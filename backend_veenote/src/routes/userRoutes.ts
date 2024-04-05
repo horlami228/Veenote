@@ -1,7 +1,14 @@
 // Import necessary modules
 import { Router } from 'express'; // Express Router to handle routing
 // Import createUser controller
-import { createUser, allUsers, userByName, deleteUser, updateUser }
+import { createUser, 
+    allUsers, 
+    userByName, 
+    deleteUser, 
+    updateUserUserName, 
+    UpdateUserPassword, 
+    getUserName,
+    updateUserEmail }
  from "../controller/userController.js"; // Import createUser controller
 import { authMiddleware } from '../controller/auth/authController.js';
 
@@ -46,7 +53,31 @@ router.delete("/user/delete/", authMiddleware, deleteUser);
  * The actual logic is handled by the controller function updateUser within the userController
  */
 
-router.put("/user/update/", authMiddleware, updateUser);
+router.put("/user/update/username", authMiddleware, updateUserUserName);
+
+/**
+ * Route for updating a user password
+ * PUT /user/updatePassword/:userName
+ * The actual logic is handled by the controller function UpdateUserPassword within the userController
+ */
+
+router.put("/user/update/password", authMiddleware, UpdateUserPassword);
+
+/**
+ * Route for retreiving username
+ * GET /user/username
+ * The actual logic is handled by the controller function getUserName within the userController
+ */
+
+router.get("/user/username", authMiddleware, getUserName);
+
+/**
+ * Route for updating a user email
+ * PUT /user/updateEmail/
+ * The actual logic is handled by the controller function updateUserEmail within the userController
+ */
+
+router.put("/user/update/email/", authMiddleware, updateUserEmail);
 
 // Export the router for use in other parts of the application
 export default router;
