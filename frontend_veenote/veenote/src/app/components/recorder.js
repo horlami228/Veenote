@@ -238,7 +238,6 @@ function VoiceRecorder({onTranscriptionComplete}) {
      
         
       <div className="text-center mt-20 ">
-      {/* <Spin spinning={isLoading} size='large'> */}
       <>
           {isLoading && <Spin spinning={isLoading} size="large" />}
         <p className="text-2xl mb-4 text-white">{formatDuration(duration)}</p>
@@ -248,10 +247,7 @@ function VoiceRecorder({onTranscriptionComplete}) {
         >
           {isRecording ? <StopIcon className="h-10 w-10" /> : <MicrophoneIcon className="h-10 w-10" />}
         </button>
-        {/* <Spin spinning={isLoading} size='large'>
-        </Spin> */}
       </>
-      {/* </Spin> */}
       </div>
       
     </div>

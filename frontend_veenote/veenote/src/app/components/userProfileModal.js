@@ -14,7 +14,7 @@ const UserProfileModal = ({ isVisible, onClose }) => {
   const router = useRouter();
 
   const handleEmailChange = () => {
-    console.log('Updating email to:', email);
+    setError('');
     // Implement the email update logic
     axios.put('http://localhost:8000/api/v1/user/update/email', { email },
       {withCredentials: true})
@@ -29,16 +29,18 @@ const UserProfileModal = ({ isVisible, onClose }) => {
         console.error('Error:', error);
         if (error.response.status === 409) {
           setError('Email already exists. Please use a different email.');
+        } else {
+          notification.error({
+            message: 'Email Update Error',
+            description: 'Failed to update your email. Please try again.'
+          });
         }
-        notification.error({
-          message: 'Email Update Error',
-          description: 'Failed to update your email. Please try again.'
-        });
       });
   };
 
-  const handlePasswordChange = () => {
-    console.log('Updating password with:', { oldPassword, newPassword });
+  const handlePasswordChange = async () => {
+    console.log('oldPassword', oldPassword);
+    setError('');
     // Implement the password update logic
     axios.put('http://localhost:8000/api/v1/user/update/password', { oldPassword, newPassword },
       {withCredentials: true})
@@ -51,15 +53,20 @@ const UserProfileModal = ({ isVisible, onClose }) => {
       })
       .catch((error) => {
         console.error('Error:', error);
-        notification.error({
-          message: 'Password Update Error',
-          description: 'Failed to update your password. Please try again.'
-        });
+        if (error.response.status === 401) {
+          setError('Old password is incorrect. Please try again.');
+          return;
+        } else {
+          notification.error({
+            message: 'Password Update Error',
+            description: 'Failed to update your password. Please try again.'
+          });
+        }
       });
   };
 
   const handleUsernameChange = () => {
-    console.log('Updating username to:', userName);
+    setError('');
     // Implement the username update logic
     axios.put('http://localhost:8000/api/v1/user/update/username', { userName },
       {withCredentials: true})
@@ -74,11 +81,13 @@ const UserProfileModal = ({ isVisible, onClose }) => {
         console.error('Error:', error);
         if (error.response.status === 409) {
           setError('Username already exists. Please use a different username.');
+        } else {
+          notification.error({
+            message: 'Username Update Error',
+            description: 'Failed to update your username. Please try again.'
+          });
         }
-        notification.error({
-          message: 'Username Update Error',
-          description: 'Failed to update your username. Please try again.'
-        });
+      
       });
   };
 
@@ -107,7 +116,7 @@ const UserProfileModal = ({ isVisible, onClose }) => {
               description: 'Your account has been successfully deleted.',
             });
             // Call a prop function to handle user logout or redirect after deletion
-            router.push('/logout');
+            router.push('/');
           })
           .catch(error => {
             console.error('Error:', error);

@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import NoteItem from './NoteItem';
 import UserProfileModal from './userProfileModal';
+import {useAuth} from './AuthContext';
 
 
 // Sidebar component
@@ -24,6 +25,7 @@ const SidebarComponent = ({ username, folders, onNoteSelect, onDelete, onRename,
   const [error, setError] = useState('');
   const [openDropdownId, setOpenDropdownId] = useState(null);
   const [isUserSettingsModalVisible, setIsUserSettingsModalVisible] = useState(false);
+  const {state} = useAuth()
 
 
 
@@ -197,11 +199,7 @@ const SidebarComponent = ({ username, folders, onNoteSelect, onDelete, onRename,
       setOpenDropdownId(noteId);
     } else if (!isOpen && openDropdownId === noteId) {
       // If trying to close the same dropdown that's currently open, decide based on conditions
-      // Here, you can add logic to delay closing or prevent it under certain conditions
-  
-      // Example: Delay closing the dropdown for 500ms
-      // This can be useful if there's a need to wait for some interaction to complete
-      // inside the dropdown before it closes.
+
       setTimeout(() => {
         // Ensure that after the timeout, the intended dropdown is still the one to be closed.
         if (openDropdownId === noteId) {
@@ -229,7 +227,10 @@ const SidebarComponent = ({ username, folders, onNoteSelect, onDelete, onRename,
     );  
 
   return (
-    <div>
+    <>
+   
+    {state.isAuthenticated && (
+      <div>
       {/* User profile settings modal */}
       <UserProfileModal isVisible={isUserSettingsModalVisible} onClose={hideUserSettingsModal} />
 
@@ -337,6 +338,8 @@ const SidebarComponent = ({ username, folders, onNoteSelect, onDelete, onRename,
         </div>
       </div>
     </div>
+      )}
+   </>
   );
 };
 

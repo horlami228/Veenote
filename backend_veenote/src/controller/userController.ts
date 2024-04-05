@@ -289,7 +289,7 @@ export const UpdateUserPassword = async (req: Request, res: Response) => {
         }
 
         // Find the user by ID to ensure they exist and to retrieve the current password
-        const currentUser = await User.findById(user._id);
+        const currentUser = await User.findById(user.id);
         if (!currentUser) {
             return res.status(404).json({
                 message: "User not found.",
@@ -299,7 +299,7 @@ export const UpdateUserPassword = async (req: Request, res: Response) => {
         // Compare the provided old password with the stored password
         const isMatch = await comparePassword(oldPassword, currentUser.password);
         if (!isMatch) {
-            return res.status(400).json({
+            return res.status(401).json({
                 message: "Invalid password.",
             });
         }

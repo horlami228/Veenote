@@ -203,6 +203,7 @@ function Page() {
         onRename={handleRenameNote}
         onAddFolder={handleAddFolder}
         onDownload={handleDownload}/>
+        
       </div>
     </AuthProvider>
   );
