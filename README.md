@@ -4,7 +4,6 @@
 
 Veenote is a web-based application that enables real-time voice-to-text transcription, allowing users to take notes efficiently without the need for manual typing. It leverages WebSocket for real-time audio streaming, AWS Transcribe for voice recognition, and MongoDB for data storage, offering a seamless note-taking experience across various devices.
 
-**Live Demo**: [Visit Veenote](http://yourliveurl.com)
 
 ## Features
 

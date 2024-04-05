@@ -2,12 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { Input, Button, notification, Select } from 'antd';
+import { useAuth } from './AuthContext';
 
 const TranscriptionEditor = ({ transcriptionText, fileName, onSave, folders }) => {
   const [text, setText] = useState(transcriptionText || '');
   const [filename, setFilename] = useState(fileName || '');
   const [selectedFolderId, setSelectedFolderId] = useState('');
   const [error, setError] = useState('');
+  const { state } = useAuth();
   
   const isSaveDisabled = !text || !text.trim();
 
@@ -16,12 +18,14 @@ const TranscriptionEditor = ({ transcriptionText, fileName, onSave, folders }) =
     setFilename(fileName); 
   }, [transcriptionText, fileName]);
 
-    useEffect(() => {
+
+  useEffect(() => {
     // Find the root folder and set its ID as the selected value
     const rootFolder = folders.find(folder => folder.isRoot);
     setSelectedFolderId(rootFolder ? rootFolder._id.toString() : null);
     console.log('the selected folder id is ', selectedFolderId);
   }, [folders]);
+
 
   const handleSave = () => {
     if (!text.trim()) {
@@ -44,7 +48,9 @@ const TranscriptionEditor = ({ transcriptionText, fileName, onSave, folders }) =
   setText('');
   setFilename('');
 }
-
+//  if (!state.isAuthenticated) {
+//   setSelectedFolderId('')
+//  }
 
   return (
     <div className="p-4">

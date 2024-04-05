@@ -207,7 +207,7 @@ function VoiceRecorder({onTranscriptionComplete}) {
       if (websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN) {
       websocketRef.current.send(JSON.stringify({ type: 'endOfAudio' }));
       }
-    }, 2000); 
+    }, 3000); 
 
   }
 };

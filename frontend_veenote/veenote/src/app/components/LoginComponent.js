@@ -83,6 +83,7 @@ function Login() {
               value={loginData.userNameOrEmail}
               className="w-full px-4 py-2 mt-2 border rounded-md text-gray-700"
               required
+              autoComplete="off"
             />
           </div>
           <div className="mt-4 flex items-center">
@@ -97,6 +98,7 @@ function Login() {
                 value={loginData.password}
                 className="w-full px-4 py-2 mt-2 border rounded-md text-gray-700"
                 required
+                autoComplete="new-password"
               />
             </div>
             <button

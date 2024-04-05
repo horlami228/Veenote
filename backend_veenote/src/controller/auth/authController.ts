@@ -10,7 +10,6 @@ import dotenv from "dotenv";
 dotenv.config({ path: "./dist/src/config/.env"});
 
 const secretKey = process.env.JWT_SECRET_KEY as string; // Secret key for JWT
-console.log(secretKey);
 
 // Define the 'login' controller function as an asynchronous function to handle POST requests for user login.
 export const login = async (req: Request, res: Response) => {
@@ -64,7 +63,6 @@ export const login = async (req: Request, res: Response) => {
 export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
     // Extract token from cookies
     const token = req.cookies['token'];
-    console.log(token);
 
     if (!token) {
         return res.status(403).json({ Error: "Access Denied. No token provided." });

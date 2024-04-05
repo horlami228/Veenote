@@ -11,6 +11,7 @@ import './globals.css';
 import { useRouter } from 'next/navigation';
 import { observer } from 'mobx-react';
 import { authStore } from './components/AuthStore';
+import { useAuth } from './components/AuthContext';
 
 function Page() {
   const [notes, setNotes] = useState([]);
@@ -21,30 +22,28 @@ function Page() {
   const [currentNote, setCurrentNote] = useState({ content: '', title: '' });
   const [username, setUsername] = useState('');
   const router = useRouter();
+
   // const username = authStore.username;
   console.log('username', username);
 
-  useEffect(() => {
-    console.log('fetching folders')
-    const fetchFolders = async () => {
-      try {
-        const response = await axios.get('http://localhost:8000/api/v1/user/folder/getAll', {
-          withCredentials: true,
-        });
-        console.log('response', response.data.data);
-        setFolder(response.data.data);
-      } catch (error) {
-        console.error('Error fetching folders:', error);
-        notification.error({
-          message: 'Error',
-          description: 'Failed to fetch folders. Please try again.'
-        })
-      }
-    };
+    useEffect(() => {
+      console.log('fetching folders')
+      const fetchFolders = async () => {
+        try {
+          const response = await axios.get('http://localhost:8000/api/v1/user/folder/getAll', {
+            withCredentials: true,
+          });
+          console.log('response', response.data.data);
+          setFolder(response.data.data);
+        } catch (error) {
+          console.error('Error fetching folders:', error);
+        }
+      };
+  
+      fetchFolders();
+    }, []);
 
-    fetchFolders();
-  }, []);
-
+  
 
 
   const handleTranscriptionSave = (text, filename, selectedFolderId) => {
@@ -165,10 +164,11 @@ function Page() {
     setFolder([...folders, newFolder]);
   };
   
-
   useEffect(() => {
     getUserName();
   }, [])
+
+
 
   const getUserName = async () => {
     try {
@@ -178,12 +178,8 @@ function Page() {
       setUsername(response.data.userName);
     } catch (error) {
       console.error('Error fetching username:', error);
-      notification.error({
-        message: 'Error',
-        description: 'Failed to fetch username. Please try again.'
-      })
     }
-  };
+}
 
   return (
     <AuthProvider>

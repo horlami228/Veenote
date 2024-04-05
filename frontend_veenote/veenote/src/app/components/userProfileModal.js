@@ -3,7 +3,7 @@ import { Modal, Input, Button, Form, Divider, notification } from 'antd';
 import axios from 'axios';
 import { DeleteOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
-import { set } from 'mobx';
+import { useAuth } from './AuthContext';
 
 const UserProfileModal = ({ isVisible, onClose }) => {
   const [email, setEmail] = useState('');
@@ -12,6 +12,13 @@ const UserProfileModal = ({ isVisible, onClose }) => {
   const [newPassword, setNewPassword] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
+  const { dispatch } = useAuth();
+
+  const handleLogout = () => {
+    dispatch({ type: 'LOGOUT' });
+    document.cookie = 'token=; max-age=0';
+    router.push('/');
+  };
 
   const handleEmailChange = () => {
     setError('');
@@ -116,7 +123,7 @@ const UserProfileModal = ({ isVisible, onClose }) => {
               description: 'Your account has been successfully deleted.',
             });
             // Call a prop function to handle user logout or redirect after deletion
-            router.push('/');
+            handleLogout();
           })
           .catch(error => {
             console.error('Error:', error);

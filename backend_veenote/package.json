@@ -7,7 +7,7 @@
   "scripts": {
     "build": "rimraf dist && npx tsc",
     "prestart": "npm run build",
-    "start": "node dist/src/server.js",
+    "start": "node dist/src/utilities/jwtSecretKeyGeneration.js && node dist/src/server.js",
     "predevStart": "npm run build",
     "devStart": "concurrently \"npx tsc -w \" \"node dist/src/utilities/jwtSecretKeyGeneration.js\" \"nodemon  dist/src/server.js\""
   },
