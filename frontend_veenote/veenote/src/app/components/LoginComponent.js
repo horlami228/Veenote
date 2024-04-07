@@ -37,7 +37,7 @@ function Login() {
 
     // Handle login logic here
     try {
-      const response = await axios.post('http://localhost:8000/api/v1/login', loginData);
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/login`, loginData);
       console.log(response);
       setLoginData({
         userNameOrEmail: '',

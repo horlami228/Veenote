@@ -23,7 +23,7 @@ const UserProfileModal = ({ isVisible, onClose }) => {
   const handleEmailChange = () => {
     setError('');
     // Implement the email update logic
-    axios.put('http://localhost:8000/api/v1/user/update/email', { email },
+    axios.put(`${process.env.NEXT_PUBLIC_API_BASE_URL}/user/update/email`, { email },
       {withCredentials: true})
       .then((response) => {
         console.log('Success updating email');
@@ -49,7 +49,7 @@ const UserProfileModal = ({ isVisible, onClose }) => {
     console.log('oldPassword', oldPassword);
     setError('');
     // Implement the password update logic
-    axios.put('http://localhost:8000/api/v1/user/update/password', { oldPassword, newPassword },
+    axios.put(`${process.env.NEXT_PUBLIC_API_BASE_URL}/user/update/password`, { oldPassword, newPassword },
       {withCredentials: true})
       .then((response) => {
         console.log('Success updating password');
@@ -75,7 +75,7 @@ const UserProfileModal = ({ isVisible, onClose }) => {
   const handleUsernameChange = () => {
     setError('');
     // Implement the username update logic
-    axios.put('http://localhost:8000/api/v1/user/update/username', { userName },
+    axios.put(`${process.env.NEXT_PUBLIC_API_BASE_URL}/user/update/username`, { userName },
       {withCredentials: true})
       .then((response) => {
         console.log('Success updating username');
@@ -116,7 +116,7 @@ const UserProfileModal = ({ isVisible, onClose }) => {
       okType: 'danger',
       cancelText: 'No',
       onOk: () => {
-        axios.delete('http://localhost:8000/api/v1/user/delete', { withCredentials: true })
+        axios.delete(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/user/delete`, { withCredentials: true })
           .then(() => {
             notification.success({
               message: 'Account Deleted',

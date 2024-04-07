@@ -54,7 +54,7 @@ const SidebarComponent = ({ username, folders, onNoteSelect, onDelete, onRename,
     if (flag) {
       console.log('Fetching notes for folder:', folderId);
       try {
-        const response = await axios.get(`http://localhost:8000/api/v1/user/folder/notes/${folderId}`, {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/user/folder/notes/${folderId}`, {
           withCredentials: true,
         });
   
@@ -152,7 +152,7 @@ const SidebarComponent = ({ username, folders, onNoteSelect, onDelete, onRename,
   const handleCreateFolder = async () => {
     if (newFolderName.trim() != '') {
       try {
-        const response = await axios.post('http://localhost:8000/api/v1/user/folder/create/new', { folderName: newFolderName }, { withCredentials: true });
+        const response = await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/user/folder/create/new`, { folderName: newFolderName }, { withCredentials: true });
         const createdFolder = response.data;
         // setFolder([...folders, createdFolder]);  // Update the folders state
         onAddFolder(createdFolder);  // Pass the new folder up to the parent component
@@ -219,10 +219,10 @@ const SidebarComponent = ({ username, folders, onNoteSelect, onDelete, onRename,
           Profile Settings
         </Menu.Item>
         {/* More menu items can be added here */}
-        {/* <Menu.Item key="1">
+        <Menu.Item key="1">
           <SettingOutlined style={{ marginRight: 8 }} />
-          Profile Settings
-        </Menu.Item> */}
+          Logout
+        </Menu.Item>
       </Menu>
     );  
 

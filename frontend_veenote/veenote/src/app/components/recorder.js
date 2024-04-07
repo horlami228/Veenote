@@ -45,81 +45,7 @@ function VoiceRecorder({onTranscriptionComplete}) {
     }
   };
 
-
-
-
-
-  // const handleStop = async () => {
-  //   console.log('Recording stopped.');
   
-  //   if (audioChunksRef.current.length === 0) {
-  //     console.log('No audio chunks were captured.');
-  //     return;
-  //   }
-  
-  //   const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
-  //   console.log(`Final audio blob size: ${audioBlob.size}`);
-  
-  //   if (audioBlob.size === 0) {
-  //     console.log('No audio data was captured.');
-  //     notification.error({
-  //       message: 'Recording Error',
-  //       description: 'No audio data was captured. Please try again.'
-  //     });
-  //     return;
-  //   }
-  
-  //   try {
-  //       // active loading spinner
-  //       setIsLoading(true);
-
-  //     const formData = new FormData();
-  //     formData.append('audio', audioBlob, 'recording.wav');
-  
-  //     // Replace 'YOUR_BACKEND_ENDPOINT' with your actual endpoint URL
-  //     const response = await axios.post('http://localhost:8000/api/v1/aws/upload', formData, {
-  //       headers: {
-  //         'Content-Type': 'multipart/form-data',
-  //       },
-  //       withCredentials: true,
-  //     });
-  
-  //     console.log('Success:', response.data);
-  //     console.log('s3Uri', response.data.s3Uri);
-
-  //     // make transcription request
-  //     const transcriptionResponse = await axios.post('http://localhost:8000/api/v1/aws/transcribe',  {
-  //       mediaFileUri: response.data.s3Uri,
-  //     }, {
-  //       withCredentials: true,
-  //     });
-
-  //     // deactivate loading spinner
-  //     setIsLoading(false);
-  //     console.log('Transcription:', transcriptionResponse.data.fullTranscript);
-      
-  //     // When transcription is complete or updated
-  //     onTranscriptionComplete(transcriptionResponse.data.fullTranscript);
-
-  //     notification.success({
-  //       message: 'Upload Success',
-  //       description: 'Recording uploaded successfully.'
-  //     });
-  //   } catch (error) {
-  //     // deactivate loading spinner
-  //     setIsLoading(false);
-  //     console.error('Error:', error);
-  //     notification.error({
-  //       message: 'Upload Error',
-  //       description: 'Failed to upload the recording. Please try again.'
-  //     });
-  //   } finally {
-  //     // Clear the audio chunks after processing
-  //     audioChunksRef.current = [];
-  //   }
-  // };
-  
-
   const startRecording = () => {
     if (!isRecording) {
         console.log('Starting recording...');
@@ -132,7 +58,13 @@ function VoiceRecorder({onTranscriptionComplete}) {
         };
 
         // establish websocket connection
-        websocketRef.current = new WebSocket('ws://localhost:8000');
+        websocketRef.current = new WebSocket(`${process.env.NEXT_PUBLIC_WS_API_BASE_URL}`);
+        if (websocketRef.current) {
+          console.log('WebSocket connection established.');
+        } else {
+          console.error('WebSocket connection failed.');
+          stopRecording();
+        };
 
         websocketRef.current.onopen = () => {
           console.log('WebSocket connection established.');

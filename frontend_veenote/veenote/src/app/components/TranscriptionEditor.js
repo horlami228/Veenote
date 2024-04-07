@@ -23,8 +23,7 @@ const TranscriptionEditor = ({ transcriptionText, fileName, onSave, folders }) =
     // Find the root folder and set its ID as the selected value
     const rootFolder = folders.find(folder => folder.isRoot);
     setSelectedFolderId(rootFolder ? rootFolder._id.toString() : null);
-    console.log('the selected folder id is ', selectedFolderId);
-  }, [folders]);
+  }, [state.isAuthenticated, folders]);
 
 
   const handleSave = () => {
@@ -47,10 +46,8 @@ const TranscriptionEditor = ({ transcriptionText, fileName, onSave, folders }) =
   onSave(text, filename, selectedFolderId);
   setText('');
   setFilename('');
-}
-//  if (!state.isAuthenticated) {
-//   setSelectedFolderId('')
-//  }
+  setSelectedFolderId('');
+};
 
   return (
     <div className="p-4">
@@ -102,9 +99,11 @@ const TranscriptionEditor = ({ transcriptionText, fileName, onSave, folders }) =
         onChange={(setSelectedFolderId)}
         style={{ width: '50%', marginRight: '10px' }}
       >
-        {folders.map(folder => (
+      {state.isAuthenticated && (
+        (folders || []).map(folder => (
           <Select.Option key={folder._id} value={folder._id.toString()}>{folder.folderName}</Select.Option>
-        ))}
+        ))
+      )}
       </Select>
     </div>
     {console.log('the selected folder id is ', selectedFolderId)}

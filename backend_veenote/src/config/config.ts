@@ -9,7 +9,7 @@ export interface Config {
 
 export const config: Config = {
     development: {
-        uri: 'mongodb://localhost:27017/veenote',
+        uri: process.env.DATABASE_DEV_URI || 'mongodb://localhost:27017/veenote',
     },
 
     production: {

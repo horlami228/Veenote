@@ -30,7 +30,7 @@ function Page() {
       console.log('fetching folders')
       const fetchFolders = async () => {
         try {
-          const response = await axios.get('http://localhost:8000/api/v1/user/folder/getAll', {
+          const response = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/user/folder/getAll`, {
             withCredentials: true,
           });
           console.log('response', response.data.data);
@@ -59,7 +59,7 @@ function Page() {
       data.fileName = filename;
     }
     // Implement the saving logic here, e.g., API call or localStorage update
-    axios.post(`http://localhost:8000/api/v1/user/create/note/${selectedFolderId}/new`, data, {
+    axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/user/create/note/${selectedFolderId}/new`, data, {
       withCredentials: true,
     })
     .then((response) => {
@@ -104,7 +104,7 @@ function Page() {
 
   const handleDeleteNote = (noteId) => {
    // send delete request
-    axios.delete(`http://localhost:8000/api/v1/user/note/delete/${noteId}`, {
+    axios.delete(`${process.env.NEXT_PUBLIC_API_BASE_URL}/user/note/delete/${noteId}`, {
       withCredentials: true,
     
     })
@@ -124,7 +124,7 @@ function Page() {
 
   const handleDownload = (noteId) => {
     try {
-      const downloadUrl = `http://localhost:8000/api/v1/user/note/download/${noteId}`;
+      const downloadUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/note/download/${noteId}`;
       window.open(downloadUrl, '_blank');
     } catch (error) {
       console.error('Error downloading the note:', error);
@@ -138,7 +138,7 @@ function Page() {
   const handleRenameNote = (noteId, newName) => {
     console.log('renaming note', noteId, newName)
     // send a request to update the note filename
-    axios.put(`http://localhost:8000/api/v1/user/note/update/${noteId}`, 
+    axios.put(`${process.env.NEXT_PUBLIC_API_BASE_URL}/user/note/update/${noteId}`, 
     { fileName: newName },
     {withCredentials: true})
       .then(response => {
@@ -172,7 +172,7 @@ function Page() {
 
   const getUserName = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/v1/user/username', {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/user/username`, {
         withCredentials: true,
       });
       setUsername(response.data.userName);
