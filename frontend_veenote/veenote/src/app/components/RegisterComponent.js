@@ -24,7 +24,7 @@ export default function Register() {
     }
     setErrorMessage('');
     try {
-      const response = await axios.post('http://localhost:8000/api/v1/user/create', {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/user/create`, {
         userName,
         email,
         password,

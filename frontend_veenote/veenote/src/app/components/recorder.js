@@ -58,11 +58,15 @@ function VoiceRecorder({onTranscriptionComplete}) {
         };
 
         // establish websocket connection
-        websocketRef.current = new WebSocket(`${process.env.NEXT_PUBLIC_WS_API_BASE_URL}`);
+        websocketRef.current = new WebSocket(`${process.env.NEXT_PUBLIC_WS_BASE_URL}`);
         if (websocketRef.current) {
           console.log('WebSocket connection established.');
         } else {
           console.error('WebSocket connection failed.');
+          notifcation.error({
+            message: 'WebSocket error',
+            description: 'An error occurred with the Websocket connection'
+          });
           stopRecording();
         };
 
@@ -93,36 +97,46 @@ function VoiceRecorder({onTranscriptionComplete}) {
               description: 'An error occurred with the WebSocket connection.'
           });
       };
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         navigator.mediaDevices.getUserMedia(constraints)
-            .then((stream) => {
+        .then((stream) => {
 
-              // Check if the browser supports the desired audio MIME type
-                const options = { mimeType: 'audio/webm;codecs=opus' }; // Opus is widely supported and good for voice
-                if (MediaRecorder.isTypeSupported('audio/wav')) {
-                  options.mimeType = 'audio/wav';
-                }
-                mediaRecorderRef.current = new MediaRecorder(stream, options);
-                mediaRecorderRef.current.ondataavailable = handleDataAvailable;
-                mediaRecorderRef.current.onstop = () => {
-                  // setIsLoading(true);
-                  console.log('Recording stopped.');
-                }
+          // Check if the browser supports the desired audio MIME type
+            const options = { mimeType: 'audio/webm;codecs=opus' }; // Opus is widely supported and good for voice
+            if (MediaRecorder.isTypeSupported('audio/wav')) {
+              options.mimeType = 'audio/wav';
+            }
+            mediaRecorderRef.current = new MediaRecorder(stream, options);
+            mediaRecorderRef.current.ondataavailable = handleDataAvailable;
+            mediaRecorderRef.current.onstop = () => {
+              // setIsLoading(true);
+              console.log('Recording stopped.');
+            }
 
-                mediaRecorderRef.current.start(100); // Start recording with a time slice of 1 second
-                setIsRecording(true);
-                console.log('MediaRecorder started with MIME type:', options.mimeType);
-                setDuration(0);
-                setError('');  // Clear any previous errors
-                // setAudioChunks([]);
-                intervalRef.current = setInterval(() => setDuration((prevDuration) => prevDuration + 1), 1000);
-            }).catch((error) => {
-                console.error('Error accessing the microphone:', error);
-                setError('Error accessing the microphone.');
-                notification.error({
-                  message: 'Recording Error',
-                  description: 'There was an error accessing the microphone. Please try again.'
-                });
+            mediaRecorderRef.current.start(100); // Start recording with a time slice of 1 second
+            setIsRecording(true);
+            console.log('MediaRecorder started with MIME type:', options.mimeType);
+            setDuration(0);
+            setError('');  // Clear any previous errors
+            // setAudioChunks([]);
+            intervalRef.current = setInterval(() => setDuration((prevDuration) => prevDuration + 1), 1000);
+        }).catch((error) => {
+            console.error('Error accessing the microphone:', error);
+            setError('Error accessing the microphone.');
+            notification.error({
+              message: 'Recording Error',
+              description: 'There was an error accessing the microphone. Please try again.'
             });
+        });
+      } else {
+        console.error('getUserMedia not supported.');
+        setError('getUserMedia not supported.');
+        notification.error({
+          message: 'Recording Error',
+          description: 'Your browser does not support recording audio. Please try a different browser.'
+        });
+      }
+
     }
 };
 

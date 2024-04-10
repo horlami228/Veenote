@@ -26,12 +26,22 @@ const server = http.createServer(app);
 // Initialize the WebSocket server
 initializeWebSocketServer(server);
 
-// Enable CORS
-app.use(cors({
-    origin: 'http://localhost:3000',
-    credentials: true
-}));
+const allowedOrigins = [process.env.ALLOWED_ORIGIN, 'http://localhost:3000'];
 
+const corsOptions: cors.CorsOptions = {
+    credentials: true,
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'), false);
+        }
+    }
+};
+
+// Enable CORS
+app.use(cors(corsOptions));
+  
 
 // Enable cookie parser
 app.use(cookieParser());
