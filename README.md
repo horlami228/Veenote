@@ -13,6 +13,9 @@ Veenote is a web-based application that enables real-time voice-to-text transcri
 - Persistent storage of notes in MongoDB.
 - Cross-platform web application accessible via any modern browser.
 
+## Demo Video
+[![Experience the Demo](./public/video_demo.png)](https://drive.google.com/file/d/1IuGVNYiMDrU0FATsIwCgTQieVIBOf1Zo/view?usp=sharing)
+
 ## Getting Started
 
 ### Prerequisites
