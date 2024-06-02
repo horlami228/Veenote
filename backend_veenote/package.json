@@ -7,6 +7,7 @@
   "scripts": {
     "build": "rimraf dist && npx tsc",
     "start": "node dist/src/utilities/jwtSecretKeyGeneration.js && node dist/src/server.js",
+    "test": "jest",
     "predevStart": "npm run build",
     "devStart": "concurrently \"npx tsc -w \" \"node dist/src/utilities/jwtSecretKeyGeneration.js\" \"nodemon  dist/src/server.js\""
   },
@@ -38,6 +39,10 @@
     "ws": "7.4.6"
   },
   "devDependencies": {
+    "@babel/core": "^7.24.5",
+    "@babel/plugin-transform-runtime": "^7.24.3",
+    "@babel/preset-env": "^7.24.5",
+    "@babel/preset-typescript": "^7.24.1",
     "@types/aws-sdk": "^2.7.0",
     "@types/bcrypt": "^5.0.2",
     "@types/cookie-parser": "^1.4.7",
@@ -45,6 +50,7 @@
     "@types/express": "^4.17.21",
     "@types/faker": "^6.6.9",
     "@types/fluent-ffmpeg": "^2.1.24",
+    "@types/jest": "^29.5.12",
     "@types/jsonwebtoken": "^9.0.6",
     "@types/mongoose": "^5.11.97",
     "@types/multer": "^1.4.11",
@@ -54,8 +60,11 @@
     "@types/ws": "^8.5.10",
     "@typescript-eslint/eslint-plugin": "^6.20.0",
     "@typescript-eslint/parser": "^6.20.0",
+    "babel-jest": "^29.7.0",
     "eslint": "^8.56.0",
+    "jest": "^29.7.0",
     "nodemon": "^3.0.3",
+    "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.4"
   }
