@@ -5,6 +5,8 @@ services:
     container_name: veenote_backend
     ports:
       - "8000:8000"
+
+  
   
   mongodb:
     image: mongo:4.4
