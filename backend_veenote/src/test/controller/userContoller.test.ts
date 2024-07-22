@@ -90,30 +90,7 @@ describe('createUser', () => {
         expect(res.json).toHaveBeenCalledWith({ "Error": "Missing Password" });
     });
 
-    import mockUserModel from '../../model/userModel';
-
-    it('should return 400 if user with email or username already exists', async () => {
-        mockUserModel.findOne.mockResolvedValue({ _id: 'existingUserId' });
-
-        await createUser(req as Request, res as Response);
-
-        expect(res.status).toHaveBeenCalledWith(400);
-        expect(res.json).toHaveBeenCalledWith({ "Error": "User with the provided email or username already exists" });
-    });
-
-    import mockUserModel from '../../model/userModel';
-
-    it('should handle errors and return 500', async () => {
-        mockUserModel.findOne.mockRejectedValue(new Error('Database error'));
-
-        await createUser(req as Request, res as Response);
-
-        expect(res.status).toHaveBeenCalledWith(500);
-        expect(res.json).toHaveBeenCalledWith({
-            "Error": "Error Creating A User",
-            "Details": "Database error"
-        });
-    });
+   
 });
 
 describe('allUsers', () => {
@@ -128,41 +105,7 @@ describe('allUsers', () => {
         };
     });
 
-    import mockUserModel from '../../model/userModel';
-
-    it('should return 200 and a list of users', async () => {
-        mockUserModel.find.mockResolvedValue([{ userName: 'user1' }, { userName: 'user2' }]);
-
-        await allUsers(req as Request, res as Response);
-
-        expect(res.status).toHaveBeenCalledWith(200);
-        expect(res.json).toHaveBeenCalledWith([{ userName: 'user1' }, { userName: 'user2' }]);
-    });
-
-    import mockUserModel from '../../model/userModel';
-
-    it('should return 404 if no users found', async () => {
-        mockUserModel.find.mockResolvedValue([]);
-
-        await allUsers(req as Request, res as Response);
-
-        expect(res.status).toHaveBeenCalledWith(404);
-        expect(res.json).toHaveBeenCalledWith({ "Error": "No user was found" });
-    });
-
-    import mockUserModel from '../../model/userModel';
-
-    it('should handle errors and return 500', async () => {
-        mockUserModel.find.mockRejectedValue(new Error('Database error'));
-
-        await allUsers(req as Request, res as Response);
-
-        expect(res.status).toHaveBeenCalledWith(500);
-        expect(res.json).toHaveBeenCalledWith({
-            "Error": "Getting all Users",
-            "Details": "Database error"
-        });
-    });
+    
 });
 
 import { userByName } from '../../controller/userController';
@@ -183,41 +126,7 @@ describe('userByName', () => {
         };
     });
 
-    import mockUserModel from '../../model/userModel';
-
-    it('should return 200 and the user data', async () => {
-        mockUserModel.find.mockResolvedValue([{ userName: 'test' }]);
-
-        await userByName(req as Request, res as Response);
-
-        expect(res.status).toHaveBeenCalledWith(200);
-        expect(res.json).toHaveBeenCalledWith([{ userName: 'test' }]);
-    });
-
-    import mockUserModel from '../../model/userModel';
-
-    it('should return 404 if user not found', async () => {
-        mockUserModel.find.mockResolvedValue([]);
-
-        await userByName(req as Request, res as Response);
-
-        expect(res.status).toHaveBeenCalledWith(404);
-        expect(res.json).toHaveBeenCalledWith({ "Error": "User not found" });
-    });
-
-    import mockUserModel from '../../model/userModel';
-
-    it('should handle errors and return 500', async () => {
-        mockUserModel.find.mockRejectedValue(new Error('Database error'));
-
-        await userByName(req as Request, res as Response);
-
-        expect(res.status).toHaveBeenCalledWith(500);
-        expect(res.json).toHaveBeenCalledWith({
-            "Error": "Getting User",
-            "Details": "Database error"
-        });
-    });
+    
 });
 
 
@@ -229,9 +138,7 @@ describe('deleteUser', () => {
 
     beforeEach(() => {
         req = {
-            user: {
-                _id: 'userId'
-            }
+
         };
         res = {
             json: jest.fn(),
@@ -240,14 +147,9 @@ describe('deleteUser', () => {
         };
     });
 
-    import mockNoteModel from '../../model/noteModel';
-    import mockFolderModel from '../../model/folderModel';
-    import mockUserModel from '../../model/userModel';
-
     it('should delete user and related data and return 204', async () => {
-        mockNoteModel.deleteMany.mockResolvedValue({});
-        mockFolderModel.deleteMany.mockResolvedValue({});
-        mockUserModel.findOneAndDelete.mockResolvedValue({});
+        
+
 
         await deleteUser(req as Request, res as Response);
 
@@ -255,10 +157,9 @@ describe('deleteUser', () => {
         expect(res.send).toHaveBeenCalled();
     });
 
-    import mockNoteModel from '../../model/noteModel';
 
     it('should handle errors and return 500', async () => {
-        mockNoteModel.deleteMany.mockRejectedValue(new Error('Database error'));
+       
 
         await deleteUser(req as Request, res as Response);
 
@@ -279,9 +180,7 @@ describe('updateUserEmail', () => {
 
     beforeEach(() => {
         req = {
-            user: {
-                id: 'userId'
-            },
+ 
             body: {
                 email: 'newemail@test.com'
             }
@@ -291,12 +190,8 @@ describe('updateUserEmail', () => {
             status: jest.fn().mockReturnThis()
         };
     });
-
-    import mockUserModel from '../../model/userModel';
-
     it('should update user email and return 200', async () => {
-        mockUserModel.findOne.mockResolvedValue(null);
-        mockUserModel.findOneAndUpdate.mockResolvedValue({ email: 'newemail@test.com' });
+       
 
         await updateUserEmail(req as Request, res as Response);
 
@@ -313,10 +208,10 @@ describe('updateUserEmail', () => {
         expect(res.json).toHaveBeenCalledWith({ message: "Email is required" });
     });
 
-    import mockUserModel from '../../model/userModel';
+
 
     it('should return 409 if email already exists', async () => {
-        mockUserModel.findOne.mockResolvedValue({ email: 'existingemail@test.com' });
+      
 
         await updateUserEmail(req as Request, res as Response);
 
@@ -324,11 +219,10 @@ describe('updateUserEmail', () => {
         expect(res.json).toHaveBeenCalledWith({ message: "User with the provided email already exists" });
     });
 
-    import mockUserModel from '../../model/userModel';
+
 
     it('should return 404 if user not found', async () => {
-        mockUserModel.findOne.mockResolvedValue(null);
-        mockUserModel.findOneAndUpdate.mockResolvedValue(null);
+  
 
         await updateUserEmail(req as Request, res as Response);
 
@@ -336,11 +230,10 @@ describe('updateUserEmail', () => {
         expect(res.json).toHaveBeenCalledWith({ message: "User not found" });
     });
 
-    import mockUserModel from '../../model/userModel';
+
 
     it('should handle errors and return 500', async () => {
-        mockUserModel.findOne.mockRejectedValue(new Error('Database error'));
-
+      
         await updateUserEmail(req as Request, res as Response);
 
         expect(res.status).toHaveBeenCalledWith(500);

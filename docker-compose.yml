@@ -1,20 +1,10 @@
 version: '3.8'
 services:
   backend:
-    build: ./backend_veenote
-    image: backend_veenote:v1
-    environment:
-      - DATABASE_URI=mongodb://mongodb:27017/veenote
-      - PORT=5000
-
-    container_name: backend_dev_container
+    image: veenote:v1
+    container_name: veenote_backend
     ports:
-      - "8000:5000"
-    volumes:
-      - ./backend_veenote:/backend_veenote
-    depends_on:
-      - mongodb
-  
+      - "8000:8000"
   
   mongodb:
     image: mongo:4.4

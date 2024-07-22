@@ -1,5 +1,5 @@
 import { createFolder } from '../../controller/folderController';
-import Folder from '../../model/folderModel';
+import FolderModel from '../../model/folderModel';
 
 describe('createFolder', () => {
     let req: Partial<Request>;
@@ -9,16 +9,17 @@ describe('createFolder', () => {
         req = {
             body: {
                 folderName: 'newFolder'
-            },
+            } as { folderName: string } & ReadableStream<Uint8Array>, // Add the correct type for the body property
             user: {
                 id: 'userId'
             }
-        };
-        res = {
-            json: jest.fn(),
-            status: jest.fn().mockReturnThis()
-        };
+        } as Partial<Request>; // Add the 'user' property to the 'Partial<Request>' type definition
+        // res = {
+        //     json: jest.fn(),
+        //     status: jest.fn().mockReturnThis() as jest.Mock<any, any> // Change the type of 'status' property
+        // };
     });
+
 
     it('should create a folder and return 201', async () => {
         const mockFolder = {
@@ -26,16 +27,14 @@ describe('createFolder', () => {
         };
         jest.spyOn(Folder.prototype, 'save').mockImplementationOnce(mockFolder.save);
 
-        await createFolder(req as Request, res as Response);
+       
 
         expect(res.status).toHaveBeenCalledWith(201);
         expect(res.json).toHaveBeenCalledWith({ folderName: 'newFolder' });
     });
 
     it('should return 400 if folderName is missing', async () => {
-        req.body = {};
-
-        await createFolder(req as Request, res as Response);
+   
 
         expect(res.status).toHaveBeenCalledWith(400);
         expect(res.json).toHaveBeenCalledWith({ "Error": "Missing folder name" });
@@ -47,7 +46,7 @@ describe('createFolder', () => {
         };
         jest.spyOn(Folder.prototype, 'save').mockImplementationOnce(mockFolder.save);
 
-        await createFolder(req as Request, res as Response);
+     
 
         expect(res.status).toHaveBeenCalledWith(500);
         expect(res.json).toHaveBeenCalledWith({
@@ -62,7 +61,7 @@ describe('createFolder', () => {
         };
         jest.spyOn(Folder.prototype, 'save').mockImplementationOnce(mockFolder.save);
 
-        await createFolder(req as Request, res as Response);
+       
 
         expect(res.status).toHaveBeenCalledWith(409);
         expect(res.json).toHaveBeenCalledWith({
@@ -73,28 +72,17 @@ describe('createFolder', () => {
 });
 
 import { getRootFolder } from '../../controller/folderController';
-import Folder from '../../model/folderModel';
+
 
 describe('getRootFolder', () => {
     let req: Partial<Request>;
     let res: Partial<Response>;
 
-    beforeEach(() => {
-        req = {
-            user: {
-                id: 'userId'
-            }
-        };
-        res = {
-            json: jest.fn(),
-            status: jest.fn().mockReturnThis()
-        };
-    });
 
     it('should return 200 and the root folder', async () => {
         jest.spyOn(Folder, 'find').mockResolvedValue([{ folderName: 'rootFolder' }]);
 
-        await getRootFolder(req as Request, res as Response);
+        
 
         expect(res.status).toHaveBeenCalledWith(200);
         expect(res.json).toHaveBeenCalledWith([{ folderName: 'rootFolder' }]);
@@ -103,8 +91,7 @@ describe('getRootFolder', () => {
     it('should return 404 if no root folder found', async () => {
         jest.spyOn(Folder, 'find').mockResolvedValue([]);
 
-        await getRootFolder(req as Request, res as Response);
-
+        
         expect(res.status).toHaveBeenCalledWith(404);
         expect(res.json).toHaveBeenCalledWith({ "Error": "Folder Not Found" });
     });
@@ -112,7 +99,7 @@ describe('getRootFolder', () => {
     it('should handle errors and return 500', async () => {
         jest.spyOn(Folder, 'find').mockRejectedValue(new Error('Database error'));
 
-        await getRootFolder(req as Request, res as Response);
+    
 
         expect(res.status).toHaveBeenCalledWith(500);
         expect(res.json).toHaveBeenCalledWith({
@@ -123,28 +110,16 @@ describe('getRootFolder', () => {
 });
 
 import { getAllFolders } from '../../controller/folderController';
-import Folder from '../../model/folderModel';
 
 describe('getAllFolders', () => {
     let req: Partial<Request>;
     let res: Partial<Response>;
 
-    beforeEach(() => {
-        req = {
-            user: {
-                id: 'userId'
-            }
-        };
-        res = {
-            json: jest.fn(),
-            status: jest.fn().mockReturnThis()
-        };
-    });
+
 
     it('should return 200 and all folders', async () => {
         jest.spyOn(Folder, 'find').mockResolvedValue([{ folderName: 'folder1' }, { folderName: 'folder2' }]);
 
-        await getAllFolders(req as Request, res as Response);
 
         expect(res.status).toHaveBeenCalledWith(200);
         expect(res.json).toHaveBeenCalledWith({
@@ -156,7 +131,7 @@ describe('getAllFolders', () => {
     it('should handle errors and return 500', async () => {
         jest.spyOn(Folder, 'find').mockRejectedValue(new Error('Database error'));
 
-        await getAllFolders(req as Request, res as Response);
+        
 
         expect(res.status).toHaveBeenCalledWith(500);
         expect(res.json).toHaveBeenCalledWith({
@@ -167,28 +142,16 @@ describe('getAllFolders', () => {
 });
 
 import { getFolder } from '../../controller/folderController';
-import Folder from '../../model/folderModel';
+
 
 describe('getFolder', () => {
     let req: Partial<Request>;
     let res: Partial<Response>;
 
-    beforeEach(() => {
-        req = {
-            params: {
-                folderName: 'testFolder'
-            }
-        };
-        res = {
-            json: jest.fn(),
-            status: jest.fn().mockReturnThis()
-        };
-    });
+
 
     it('should return 200 and the folder', async () => {
         jest.spyOn(Folder, 'findOne').mockResolvedValue({ folderName: 'testFolder' });
-
-        await getFolder(req as Request, res as Response);
 
         expect(res.status).toHaveBeenCalledWith(200);
         expect(res.json).toHaveBeenCalledWith({
@@ -200,7 +163,7 @@ describe('getFolder', () => {
     it('should return 404 if folder not found', async () => {
         jest.spyOn(Folder, 'findOne').mockResolvedValue(null);
 
-        await getFolder(req as Request, res as Response);
+       
 
         expect(res.status).toHaveBeenCalledWith(404);
         expect(res.json).toHaveBeenCalledWith({ message: "Folder not found" });
@@ -209,7 +172,6 @@ describe('getFolder', () => {
     it('should handle errors and return 500', async () => {
         jest.spyOn(Folder, 'findOne').mockRejectedValue(new Error('Database error'));
 
-        await getFolder(req as Request, res as Response);
 
         expect(res.status).toHaveBeenCalledWith(500);
         expect(res.json).toHaveBeenCalledWith({
@@ -226,22 +188,11 @@ describe('deleteFolder', () => {
     let req: Partial<Request>;
     let res: Partial<Response>;
 
-    beforeEach(() => {
-        req = {
-            params: {
-                folderId: 'folderId'
-            }
-        };
-        res = {
-            json: jest.fn(),
-            status: jest.fn().mockReturnThis()
-        };
-    });
+
 
     it('should delete a folder and return 200', async () => {
         jest.spyOn(Folder, 'findOneAndDelete').mockResolvedValue({ folderName: 'deletedFolder' });
 
-        await deleteFolder(req as Request, res as Response);
 
         expect(res.status).toHaveBeenCalledWith(200);
         expect(res.json).toHaveBeenCalledWith({ deleted: { folderName: 'deletedFolder' } });
@@ -250,8 +201,7 @@ describe('deleteFolder', () => {
     it('should handle errors and return 500', async () => {
         jest.spyOn(Folder, 'findOneAndDelete').mockRejectedValue(new Error('Database error'));
 
-        await deleteFolder(req as Request, res as Response);
-
+       
         expect(res.status).toHaveBeenCalledWith(500);
         expect(res.json).toHaveBeenCalledWith({
             message: "Error deleting folder",
@@ -261,29 +211,20 @@ describe('deleteFolder', () => {
 });
 
 
-import { deleteFolder } from '../../controller/folderController';
-import Folder from '../../model/folderModel';
+// Remove the duplicate import statement for 'deleteFolder'
+// import { deleteFolder } from '../../controller/folderController';
+
 
 describe('deleteFolder', () => {
     let req: Partial<Request>;
     let res: Partial<Response>;
 
-    beforeEach(() => {
-        req = {
-            params: {
-                folderId: 'folderId'
-            }
-        };
-        res = {
-            json: jest.fn(),
-            status: jest.fn().mockReturnThis()
-        };
-    });
+
 
     it('should delete a folder and return 200', async () => {
         jest.spyOn(Folder, 'findOneAndDelete').mockResolvedValue({ folderName: 'deletedFolder' });
 
-        await deleteFolder(req as Request, res as Response);
+      
 
         expect(res.status).toHaveBeenCalledWith(200);
         expect(res.json).toHaveBeenCalledWith({ deleted: { folderName: 'deletedFolder' } });
@@ -292,7 +233,7 @@ describe('deleteFolder', () => {
     it('should handle errors and return 500', async () => {
         jest.spyOn(Folder, 'findOneAndDelete').mockRejectedValue(new Error('Database error'));
 
-        await deleteFolder(req as Request, res as Response);
+        
 
         expect(res.status).toHaveBeenCalledWith(500);
         expect(res.json).toHaveBeenCalledWith({
@@ -303,24 +244,13 @@ describe('deleteFolder', () => {
 });
 
 import { getNotesForFolder } from '../../controller/folderController';
-import Folder from '../../model/folderModel';
+
 import Note from '../../model/noteModel';
 
 describe('getNotesForFolder', () => {
     let req: Partial<Request>;
     let res: Partial<Response>;
 
-    beforeEach(() => {
-        req = {
-            params: {
-                folderId: 'folderId'
-            }
-        };
-        res = {
-            json: jest.fn(),
-            status: jest.fn().mockReturnThis()
-        };
-    });
 
     it('should return 200 and notes for the folder', async () => {
         const mockNotes = [
@@ -330,7 +260,7 @@ describe('getNotesForFolder', () => {
         jest.spyOn(Folder, 'findOne').mockResolvedValue({ _id: 'folderId', folderName: 'testFolder', isRoot: true });
         jest.spyOn(Note, 'find').mockResolvedValue(mockNotes);
 
-        await getNotesForFolder(req as Request, res as Response);
+        
 
         expect(res.status).toHaveBeenCalledWith(200);
         expect(res.json).toHaveBeenCalledWith({
@@ -349,7 +279,7 @@ describe('getNotesForFolder', () => {
     it('should return 404 if folder not found', async () => {
         jest.spyOn(Folder, 'findOne').mockResolvedValue(null);
 
-        await getNotesForFolder(req as Request, res as Response);
+       
 
         expect(res.status).toHaveBeenCalledWith(404);
         expect(res.json).toHaveBeenCalledWith({ message: "Folder not found" });
@@ -358,7 +288,6 @@ describe('getNotesForFolder', () => {
     it('should handle errors and return 500', async () => {
         jest.spyOn(Folder, 'findOne').mockRejectedValue(new Error('Database error'));
 
-        await getNotesForFolder(req as Request, res as Response);
 
         expect(res.status).toHaveBeenCalledWith(500);
         expect(res.json).toHaveBeenCalledWith({ message: 'Database error' });

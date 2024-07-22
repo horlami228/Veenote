@@ -1,20 +1,40 @@
-# using the official node.js image as base image
-FROM node:21-alpine3.18
+# Stage 1: Build
+FROM node:22.5-bullseye AS build
 
-# set the working directory for the container
+# Set the working directory
 WORKDIR /backend_veenote
 
-# copy package.json and package-lock.json to the container
-COPY package*.json /backend_veenote/
+# Copy package.json and package-lock.json
+COPY package*.json ./
 
-# install the dependencies including devDependencies
+# Install all dependencies including devDependencies
 RUN npm install
 
-# copy the rest of the backend source code
+# Copy the rest of the source code
 COPY . .
 
+# Compile the TypeScript code
+RUN npm run build
+
+# Stage 2: Runtime
+FROM node:22.5-bullseye AS runtime
+
+# Set the working directory
+WORKDIR /backend_veenote
+
+# Copy only the necessary files from the build stage
+COPY --from=build /backend_veenote/dist ./dist
+COPY --from=build /backend_veenote/package*.json ./
+COPY --from=build /backend_veenote/node_modules ./node_modules
+
+
+# Install ffmpeg
+RUN apt-get update && \
+    apt-get install -y ffmpeg
+
+
 # expose the port for the app
-EXPOSE 5000
+EXPOSE 8000
 
 # command to compile typescript and start the application
-CMD ["npm", "run", "devStart"]
+CMD ["npm", "run", "start"]
