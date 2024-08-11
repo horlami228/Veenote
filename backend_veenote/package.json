@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "rimraf dist && npx tsc",
-    "start": "node dist/src/utilities/jwtSecretKeyGeneration.js && node dist/src/server.js",
+    "start": "node dist/src/server.js",
     "test": "jest",
     "predevStart": "npm run build",
     "devStart": "concurrently \"npx tsc -w \" \"node dist/src/utilities/jwtSecretKeyGeneration.js\" \"nodemon  dist/src/server.js\""
